@@ -1,0 +1,48 @@
+* {
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  font-family: monospace;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.container {
+  padding-top: 40px;
+}
+
+header {
+  width: 100%;
+  height: 40px;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.content {
+  padding: 40px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.records,
+.record-fields {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.record {
+  background: #eee;
+  display: block;
+  padding: 20px;
+  margin: 10px 0;
+}
