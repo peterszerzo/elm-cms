@@ -1,7 +1,6 @@
 module Routes exposing (..)
 
 import Dict
-import Http
 import Navigation
 import Records
 
@@ -27,10 +26,10 @@ parseFrags frags =
                 (\recordName ->
                     case id of
                         Just id_ ->
-                            Show recordName id_ Loading
+                            Show recordName id_ LoadingShow
 
                         Nothing ->
-                            List recordName Loading
+                            List recordName LoadingList
                 )
             |> Maybe.withDefault (NotFound "Record not found.")
 
@@ -49,24 +48,23 @@ parse loc =
            )
 
 
-type alias ListData =
-    List (Dict.Dict String String)
+type ListStatus
+    = LoadingList
+    | Loaded (List (Dict.Dict String String))
+    | ListError String
 
 
-type alias ShowData =
-    Dict.Dict String String
-
-
-type RouteData dataType
-    = Loading
-    | Unsaved dataType
-    | Saving dataType
-    | Saved dataType
-    | Error String
+type ShowStatus
+    = LoadingShow
+    | New (Dict.Dict String String)
+    | UnsavedChanges (Dict.Dict String String)
+    | Saving (Dict.Dict String String)
+    | Saved (Dict.Dict String String)
+    | ShowError String
 
 
 type Route
     = Home
-    | List String (RouteData ListData)
-    | Show String String (RouteData ShowData)
+    | List String ListStatus
+    | Show String String ShowStatus
     | NotFound String

@@ -4,6 +4,7 @@ import Navigation
 import Messages exposing (Msg)
 import Routes exposing (Route, parse)
 import Commands
+import Time
 
 
 type alias Flags =
@@ -14,7 +15,17 @@ type alias Model =
     { route : Route
     , apiUrl : String
     , user : String
+    , awaiting :
+        Maybe
+            { type_ : String
+            , requestedAt : Time.Time
+            }
+    , flash :
+        { message : String
+        , createdAt : Time.Time
+        }
     , networkError : Maybe String
+    , time : Time.Time
     }
 
 
@@ -27,7 +38,15 @@ init apiUrl loc =
         ( { route = route
           , apiUrl = apiUrl
           , user = "Alfred"
-          , networkError = Nothing
+          , awaiting = Nothing
+          , networkError =
+                Nothing
+          , flash =
+                -- Set flash message far enough in the past so that it's not shown initially.
+                { message = ""
+                , createdAt = -1000
+                }
+          , time = 0
           }
         , Commands.onRouteChange apiUrl route
         )
