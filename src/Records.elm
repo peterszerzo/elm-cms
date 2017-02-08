@@ -5,9 +5,6 @@ import Dict
 
 type FieldType
     = Text
-    | TextArea
-    | YamlTextArea
-    | Select (List String)
 
 
 type alias Field =

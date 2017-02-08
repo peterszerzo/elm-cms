@@ -2,8 +2,8 @@ module Main exposing (..)
 
 import Navigation
 import Dict
-import Html exposing (Html, program, header, text, div, img, h1, a, p, ul, li)
-import Html.Attributes exposing (class, href)
+import Html exposing (Html, program, header, text, div, img, h1, a, p, ul, li, form, label, input)
+import Html.Attributes exposing (class, href, value)
 import Html.Events exposing (onClick)
 import Records exposing (records)
 import Http
@@ -184,7 +184,7 @@ update msg model =
                                                 Error ("Could not decode: " ++ response)
                                    )
                     in
-                        ( { model | route = Show id record data }, Cmd.none )
+                        ( { model | route = Show record id data }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -218,6 +218,27 @@ viewLoader =
     p [] [ text "Loading entries..." ]
 
 
+viewForm : String -> Dict.Dict String String -> Html Msg
+viewForm recordName dict =
+    let
+        fields =
+            Dict.get recordName Records.records
+                |> Maybe.withDefault []
+    in
+        form []
+            (List.map
+                (\{ id, type_ } ->
+                    label []
+                        [ text ("Enter " ++ id)
+                        , input
+                            [ value (Dict.get id dict |> Maybe.withDefault "") ]
+                            []
+                        ]
+                )
+                fields
+            )
+
+
 viewContent : Model -> Html Msg
 viewContent model =
     case model.route of
@@ -245,7 +266,7 @@ viewContent model =
                             p [] [ text "Something is not implemented." ]
             in
                 div [ class "content" ]
-                    [ p [] [ text ("Listing " ++ record ++ "s") ]
+                    [ h1 [] [ text ("Listing " ++ record ++ "s") ]
                     , viewLink ( "Add new", "/" ++ record ++ "/new" )
                     , dataView
                     ]
@@ -257,11 +278,17 @@ viewContent model =
                         Loading ->
                             viewLoader
 
+                        Saved dict ->
+                            div []
+                                [ h1 [] [ text "Edit" ]
+                                , viewForm record dict
+                                ]
+
                         _ ->
                             p [] [ text "Other stuff" ]
             in
                 div [ class "content" ]
-                    [ text ("Showing " ++ record ++ " with id " ++ id)
+                    [ dataView
                     ]
 
         NotFound error ->

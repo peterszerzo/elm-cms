@@ -46,3 +46,22 @@ header {
   padding: 20px;
   margin: 10px 0;
 }
+
+input {
+  display: block;
+  margin-top: 6px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #eee;
+  border-radius: 3px;
+}
+
+input:focus {
+  outline: 0;
+  border-color: #333;
+}
+
+label {
+  display: block;
+  margin-top: 30px;
+}
