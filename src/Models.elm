@@ -1,14 +1,16 @@
-module Models exposing (Model, init, Flags)
+module Models exposing (..)
 
-import Navigation
-import Messages exposing (Msg)
 import Routes exposing (Route, parse)
-import Commands
 import Time
 
 
 type alias Flags =
     String
+
+
+type Operation
+    = DeletingRecord
+    | ReceivingNewRecordId String
 
 
 type alias Model =
@@ -17,7 +19,7 @@ type alias Model =
     , user : String
     , awaiting :
         Maybe
-            { type_ : String
+            { operation : Operation
             , requestedAt : Time.Time
             }
     , flash :
@@ -29,24 +31,27 @@ type alias Model =
     }
 
 
-init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
-init apiUrl loc =
-    let
-        route =
-            parse loc
-    in
-        ( { route = route
-          , apiUrl = apiUrl
-          , user = "Alfred"
-          , awaiting = Nothing
-          , networkError =
-                Nothing
-          , flash =
-                -- Set flash message far enough in the past so that it's not shown initially.
-                { message = ""
-                , createdAt = -1000
-                }
-          , time = 0
-          }
-        , Commands.onRouteChange apiUrl route
-        )
+
+-- Records
+
+
+type alias RecordName =
+    String
+
+
+type FieldType
+    = Text
+    | TextArea
+
+
+type alias Field =
+    { id : String
+    , type_ : FieldType
+    , showInListView : Bool
+    , default : Maybe String
+    , isRequired : Bool
+    }
+
+
+type alias Record =
+    List Field

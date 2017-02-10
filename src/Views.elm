@@ -8,6 +8,7 @@ import Messages exposing (Msg(..))
 import Records
 import Routes exposing (..)
 import Models exposing (Model)
+import Utilities
 
 
 link : ( String, String ) -> Html Msg
@@ -21,16 +22,27 @@ recordListItem recordName rec =
         [ ul
             [ class "record-fields"
             ]
-            (List.map
-                (\( key, value ) ->
-                    li
-                        []
-                        [ text (key ++ ": " ++ value) ]
-                )
-                (Dict.toList rec)
+            (Dict.toList rec
+                |> List.filter
+                    (\( id, _ ) ->
+                        id
+                            == "id"
+                            || (Dict.get recordName Records.records
+                                    |> Maybe.map (List.filter (\field -> field.showInListView))
+                                    |> Maybe.map (List.map .id)
+                                    |> Maybe.map (List.member id)
+                                    |> Maybe.withDefault False
+                               )
+                    )
+                |> List.map
+                    (\( key, value ) ->
+                        li
+                            []
+                            [ text (key ++ ": " ++ value) ]
+                    )
             )
         , div [ class "record__nav" ]
-            [ link ( "Edit", "/" ++ recordName ++ "s/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
+            [ link ( "Edit", "/" ++ (Utilities.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
             , a [ href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
             ]
         ]
@@ -53,7 +65,7 @@ editForm recordName dict =
                 (\opts ->
                     label [ for (recordName ++ "-" ++ opts.id) ]
                         [ text ("Enter " ++ opts.id)
-                        , (if opts.type_ == Records.Text then
+                        , (if opts.type_ == Models.Text then
                             input
                            else
                             textarea
@@ -77,7 +89,20 @@ content model =
                 [ h1 [] [ text ("Good day, " ++ model.user) ]
                 , div [ class "status" ]
                     [ p [] [ text "Would you like to work on some..." ]
-                    , ul [] (Records.records |> Dict.toList |> List.map Tuple.first |> List.map (\recordName -> li [] [ link ( recordName ++ "s", "/" ++ recordName ++ "s" ) ]))
+                    , ul []
+                        (Records.records
+                            |> Dict.toList
+                            |> List.map Tuple.first
+                            |> List.map
+                                (\recordName ->
+                                    li []
+                                        [ link
+                                            ( (Utilities.pluralize recordName)
+                                            , "/" ++ (Utilities.pluralize recordName)
+                                            )
+                                        ]
+                                )
+                        )
                     ]
                 ]
 
@@ -121,7 +146,7 @@ content model =
                         , p [ class "status" ]
                             [ text "You have unsaved changes."
                             , button
-                                [ onClick RequestSave
+                                [ onClick RequestUpdate
                                 ]
                                 [ text "Save" ]
                             ]
@@ -161,7 +186,7 @@ view model =
         , div
             [ classList
                 [ ( "flash", True )
-                , ( "flash--visible", model.time - model.flash.createdAt < 20 )
+                , ( "flash--visible", model.time - model.flash.createdAt < 8 )
                 ]
             ]
             [ text model.flash.message ]

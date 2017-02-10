@@ -1,28 +1,7 @@
 module Records exposing (..)
 
 import Dict
-
-
-type alias RecordName =
-    String
-
-
-type FieldType
-    = Text
-    | TextArea
-
-
-type alias Field =
-    { id : String
-    , type_ : FieldType
-    , showInListView : Bool
-    , default : Maybe String
-    , isRequired : Bool
-    }
-
-
-type alias Record =
-    List Field
+import Models exposing (..)
 
 
 create : RecordName -> String -> Dict.Dict String String

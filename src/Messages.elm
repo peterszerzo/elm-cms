@@ -3,7 +3,9 @@ module Messages exposing (..)
 import Http
 import Time
 import Routes exposing (Route)
-import Records exposing (RecordName)
+
+
+-- String arguments in tagged unions represent the record name first and its id second
 
 
 type Msg
@@ -11,8 +13,9 @@ type Msg
     | Navigate String
     | ChangeField String String
     | RequestSave
+    | RequestUpdate
+    | RequestDelete String String
     | ReceiveHttp (Result Http.Error String)
-    | RequestNewRecordId RecordName
+    | RequestNewRecordId String
     | ReceiveNewRecordId String
-    | RequestDelete RecordName String
     | Tick Time.Time

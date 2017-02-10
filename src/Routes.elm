@@ -2,50 +2,6 @@ module Routes exposing (..)
 
 import Dict
 import Navigation
-import Records
-
-
-parseFrags : List String -> Route
-parseFrags frags =
-    let
-        recordName =
-            List.head frags
-                |> Maybe.andThen
-                    (\s ->
-                        if Dict.get (String.dropRight 1 s) Records.records /= Nothing then
-                            Just (String.dropRight 1 s)
-                        else
-                            Nothing
-                    )
-
-        id =
-            frags |> List.drop 1 |> List.head
-    in
-        recordName
-            |> Maybe.map
-                (\recordName ->
-                    case id of
-                        Just id_ ->
-                            Show recordName id_ LoadingShow
-
-                        Nothing ->
-                            List recordName LoadingList
-                )
-            |> Maybe.withDefault (NotFound "Record not found.")
-
-
-parse : Navigation.Location -> Route
-parse loc =
-    loc.pathname
-        |> String.dropLeft 1
-        |> (\s ->
-                case s of
-                    "" ->
-                        Home
-
-                    _ ->
-                        parseFrags (String.split "/" s)
-           )
 
 
 type ListStatus
@@ -68,3 +24,36 @@ type Route
     | List String ListStatus
     | Show String String ShowStatus
     | NotFound String
+
+
+parseFrags : List String -> Route
+parseFrags frags =
+    let
+        recordName =
+            List.head frags
+                |> Maybe.map (String.dropRight 1)
+                |> Maybe.withDefault ""
+
+        id =
+            frags |> List.drop 1 |> List.head
+    in
+        case id of
+            Just id_ ->
+                Show recordName id_ LoadingShow
+
+            Nothing ->
+                List recordName LoadingList
+
+
+parse : Navigation.Location -> Route
+parse loc =
+    loc.pathname
+        |> String.dropLeft 1
+        |> (\s ->
+                case s of
+                    "" ->
+                        Home
+
+                    _ ->
+                        parseFrags (String.split "/" s)
+           )

@@ -32,16 +32,18 @@ update msg model =
 
         ReceiveHttp (Ok resString) ->
             case model.awaiting of
-                Just { type_, requestedAt } ->
-                    if String.left 6 type_ == "delete" then
-                        ( { model
-                            | awaiting = Nothing
-                            , flash = { message = "Record successfully deleted", createdAt = model.time }
-                          }
-                        , Cmd.none
-                        )
-                    else
-                        ( model, Cmd.none )
+                Just { operation, requestedAt } ->
+                    case operation of
+                        Models.DeletingRecord ->
+                            ( { model
+                                | awaiting = Nothing
+                                , flash = { message = "Record successfully deleted", createdAt = model.time }
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 Nothing ->
                     case model.route of
@@ -88,6 +90,17 @@ update msg model =
                             , Cmd.none
                             )
 
+                        Show recordName id (UnsavedChanges dict) ->
+                            ( { model
+                                | route = Show recordName id (Saved dict)
+                                , flash =
+                                    { message = recordName ++ " successfully updated, id = " ++ id
+                                    , createdAt = model.time
+                                    }
+                              }
+                            , Cmd.none
+                            )
+
                         _ ->
                             ( model, Cmd.none )
 
@@ -105,10 +118,28 @@ update msg model =
                     )
 
         RequestNewRecordId recordName ->
-            ( { model | awaiting = Just { type_ = "new " ++ recordName, requestedAt = model.time } }, Random.int 0 100 |> Random.map toString |> Random.generate ReceiveNewRecordId )
+            ( { model | awaiting = Just { operation = Models.ReceivingNewRecordId recordName, requestedAt = model.time } }, Random.int 0 100 |> Random.map toString |> Random.generate ReceiveNewRecordId )
 
         ReceiveNewRecordId id ->
-            ( { model | awaiting = Nothing }, Navigation.newUrl ((model.awaiting |> Maybe.map (String.dropLeft 4 << .type_) |> Maybe.withDefault "") ++ "s/" ++ id) )
+            ( { model | awaiting = Nothing }
+            , Navigation.newUrl
+                ((model.awaiting
+                    |> Maybe.map .operation
+                    |> Maybe.map
+                        (\op ->
+                            case op of
+                                Models.ReceivingNewRecordId recordName ->
+                                    recordName
+
+                                _ ->
+                                    ""
+                        )
+                    |> Maybe.withDefault ""
+                 )
+                    ++ "s/"
+                    ++ id
+                )
+            )
 
         RequestSave ->
             case model.route of
@@ -118,16 +149,39 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        RequestUpdate ->
+            case model.route of
+                Show recordName id (UnsavedChanges dict) ->
+                    ( model, Commands.updateRequest model.apiUrl recordName id dict )
+
+                _ ->
+                    ( model, Cmd.none )
+
         RequestDelete recordName id ->
-            ( { model
-                | awaiting =
-                    Just
-                        { type_ = "delete " ++ recordName
-                        , requestedAt = model.time
-                        }
-              }
-            , Commands.deleteRequest model.apiUrl recordName id
-            )
+            let
+                newRoute =
+                    case model.route of
+                        List recordName (Loaded dicts) ->
+                            List recordName
+                                (Loaded
+                                    (dicts
+                                        |> List.filter (\dict -> Dict.get "id" dict /= Just id)
+                                    )
+                                )
+
+                        _ ->
+                            model.route
+            in
+                ( { model
+                    | awaiting =
+                        Just
+                            { operation = Models.DeletingRecord
+                            , requestedAt = model.time
+                            }
+                    , route = newRoute
+                  }
+                , Commands.deleteRequest model.apiUrl recordName id
+                )
 
         ChangeField fieldId value ->
             let
