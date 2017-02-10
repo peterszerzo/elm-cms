@@ -9,6 +9,7 @@ type alias RecordName =
 
 type FieldType
     = Text
+    | TextArea
 
 
 type alias Field =
@@ -55,6 +56,12 @@ records =
               }
             , { id = "metaDescription"
               , type_ = Text
+              , showInListView = False
+              , default = Nothing
+              , isRequired = True
+              }
+            , { id = "content"
+              , type_ = TextArea
               , showInListView = False
               , default = Nothing
               , isRequired = True

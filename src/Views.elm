@@ -1,8 +1,8 @@
 module Views exposing (..)
 
 import Dict
-import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button)
-import Html.Attributes exposing (class, classList, href, value)
+import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
+import Html.Attributes exposing (class, classList, href, value, for, id)
 import Html.Events exposing (onClick, onInput)
 import Messages exposing (Msg(..))
 import Records
@@ -50,12 +50,17 @@ editForm recordName dict =
     in
         form []
             (List.map
-                (\{ id, type_ } ->
-                    label []
-                        [ text ("Enter " ++ id)
-                        , input
-                            [ value (Dict.get id dict |> Maybe.withDefault "")
-                            , onInput (ChangeField id)
+                (\opts ->
+                    label [ for (recordName ++ "-" ++ opts.id) ]
+                        [ text ("Enter " ++ opts.id)
+                        , (if opts.type_ == Records.Text then
+                            input
+                           else
+                            textarea
+                          )
+                            [ id (recordName ++ "-" ++ opts.id)
+                            , value (Dict.get opts.id dict |> Maybe.withDefault "")
+                            , onInput (ChangeField opts.id)
                             ]
                             []
                         ]

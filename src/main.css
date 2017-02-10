@@ -82,16 +82,23 @@ header {
   margin-left: 10px;
 }
 
-input {
+input,
+textarea {
   display: block;
   margin-top: 6px;
   width: 100%;
   padding: 8px;
   border: 1px solid var(--faint-blue);
   border-radius: 3px;
+  transition: border-color .3s;
 }
 
-input:focus {
+textarea {
+  min-height: 200px;
+}
+
+input:focus,
+textarea:focus {
   outline: 0;
   border-color: var(--blue);
 }
