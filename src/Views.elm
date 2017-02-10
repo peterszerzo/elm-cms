@@ -2,13 +2,14 @@ module Views exposing (..)
 
 import Dict
 import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
-import Html.Attributes exposing (class, classList, href, value, for, id)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (class, classList, href, value, for, id, type_)
+import Html.Events exposing (onClick, onInput, on)
 import Messages exposing (Msg(..))
 import Records
 import Routes exposing (..)
 import Models exposing (Model)
 import Utilities
+import Json.Decode as JD
 
 
 link : ( String, String ) -> Html Msg
@@ -178,14 +179,34 @@ content model =
                 ]
 
 
+fileUpload : Maybe String -> Html Msg
+fileUpload maybeUrl =
+    div [ class "fileupload panel-skin" ]
+        [ p []
+            [ text
+                (case maybeUrl of
+                    Just url ->
+                        "Uploaded: " ++ url
+
+                    Nothing ->
+                        "No file uploaded"
+                )
+            ]
+        , input [ id "fileupload", type_ "file", on "change" (JD.succeed (UploadFile "fileupload")) ] []
+        , label [ for "fileupload" ] [ text "Upload file" ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div [ class "container" ]
-        [ header [] [ link ( "elm-cms", "/" ) ]
+        [ header [ class "header" ] [ link ( "elm-cms", "/" ) ]
         , content model
+        , fileUpload model.uploadedFileUrl
         , div
             [ classList
                 [ ( "flash", True )
+                , ( "panel-skin", True )
                 , ( "flash--visible", model.time - model.flash.createdAt < 8 )
                 ]
             ]

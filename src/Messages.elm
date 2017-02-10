@@ -5,7 +5,7 @@ import Time
 import Routes exposing (Route)
 
 
--- String arguments in tagged unions represent the record name first and its id second
+-- String arguments in tagged unions represent the record name first and record id second
 
 
 type Msg
@@ -18,4 +18,6 @@ type Msg
     | ReceiveHttp (Result Http.Error String)
     | RequestNewRecordId String
     | ReceiveNewRecordId String
+    | UploadFile String
+    | FileUploaded String
     | Tick Time.Time

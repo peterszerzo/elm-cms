@@ -61,7 +61,7 @@ deleteRequest apiUrl recordName id =
 updateRequest : String -> String -> String -> Dict.Dict String String -> Cmd Msg
 updateRequest apiUrl recordName id dict =
     Http.send ReceiveHttp <|
-        Http.request
+        (Http.request
             { method = "PATCH"
             , headers = []
             , url = (apiUrl ++ (Utilities.pluralize recordName) ++ "/" ++ id)
@@ -78,3 +78,5 @@ updateRequest apiUrl recordName id dict =
             , timeout = Nothing
             , withCredentials = False
             }
+            |> Debug.log "updatereq"
+        )

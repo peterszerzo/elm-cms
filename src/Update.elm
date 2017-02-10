@@ -9,6 +9,7 @@ import Commands
 import Routes exposing (..)
 import Json.Decode as JD
 import Records
+import Ports
 
 
 decodeRecord : JD.Decoder (Dict.Dict String String)
@@ -208,6 +209,12 @@ update msg model =
                             model.route
             in
                 ( { model | route = newRoute }, Cmd.none )
+
+        UploadFile fileInputFieldId ->
+            ( model, Ports.uploadFile fileInputFieldId )
+
+        FileUploaded url ->
+            ( { model | uploadedFileUrl = Just url }, Cmd.none )
 
         Tick time ->
             ( { model | time = model.time + 1 }, Cmd.none )

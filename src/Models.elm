@@ -27,16 +27,13 @@ type alias Model =
         , createdAt : Time.Time
         }
     , networkError : Maybe String
+    , uploadedFileUrl : Maybe String
     , time : Time.Time
     }
 
 
 
 -- Records
-
-
-type alias RecordName =
-    String
 
 
 type FieldType

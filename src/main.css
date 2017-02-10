@@ -1,6 +1,9 @@
 :root {
   --blue: rgb(51, 54, 255);
   --faint-blue: rgba(51, 54, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --shadow-blur: 6px;
+  --border-radius: 4px;
 }
 
 * {
@@ -31,15 +34,83 @@ ul {
   padding: 0;
 }
 
+/* Form */
+
+input,
+textarea {
+  display: block;
+  margin-top: 6px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--faint-blue);
+  border-radius: var(--border-radius);
+  transition: border-color .3s;
+}
+
+textarea {
+  min-height: 200px;
+}
+
+input:focus,
+textarea:focus {
+  outline: 0;
+  border-color: var(--blue);
+}
+
+label {
+  text-align: left;
+  display: block;
+  margin-top: 30px;
+}
+
+label:first-of-type {
+  margin-top: 0;
+}
+
+input[type='file'] {
+  width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+input[type='file'] + label {
+  cursor: pointer;
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+/* Setup */
+
 .container {
   padding-top: 40px;
 }
 
-header {
+.content {
+  padding: 40px;
+  max-width: 800px;
+  margin: auto;
+}
+
+/* Panel */
+
+.panel-skin {
+  padding: 20px;
+  text-align: left;
+  background: var(--faint-blue);
+  box-shadow: 0 0 var(--shadow-blur) var(--shadow-color);
+  border-radius: var(--border-radius);
+}
+
+/* Header */
+
+.header {
   width: 100%;
   height: 40px;
   background: var(--faint-blue);
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 var(--shadow-blur) var(--shadow-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,11 +119,7 @@ header {
   left: 0;
 }
 
-.content {
-  padding: 40px;
-  max-width: 800px;
-  margin: auto;
-}
+/* Status */
 
 .status {
   margin-bottom: 50px;
@@ -62,6 +129,28 @@ header {
   display: inline-block;
   margin: 2px;
 }
+
+/* Flash */
+
+.flash {
+  width: 240px;
+  height: auto;
+  position: fixed;
+  right: 20px;
+  top: 60px;
+  background: var(--faint-blue);
+  padding: 20px;
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+
+.flash--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Record */
 
 .record {
   text-align: left;
@@ -82,47 +171,13 @@ header {
   margin-left: 10px;
 }
 
-input,
-textarea {
-  display: block;
-  margin-top: 6px;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid var(--faint-blue);
-  border-radius: 3px;
-  transition: border-color .3s;
-}
+/* Fileupload */
 
-textarea {
-  min-height: 200px;
-}
-
-input:focus,
-textarea:focus {
-  outline: 0;
-  border-color: var(--blue);
-}
-
-label {
-  text-align: left;
-  display: block;
-  margin-top: 30px;
-}
-
-.flash {
-  width: 240px;
-  height: auto;
-  position: fixed;
-  right: 20px;
-  top: 60px;
-  background: var(--faint-blue);
+.fileupload {
   padding: 20px;
-  opacity: 0;
-  transition: opacity .3s;
-  pointer-events: none;
-}
-
-.flash--visible {
-  opacity: 1;
-  pointer-events: all;
+  background: var(--faint-blue);
+  width: 200px;
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
 }

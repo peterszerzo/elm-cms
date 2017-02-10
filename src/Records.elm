@@ -4,14 +4,19 @@ import Dict
 import Models exposing (..)
 
 
-create : RecordName -> String -> Dict.Dict String String
+create : String -> String -> Dict.Dict String String
 create recordName id =
     Dict.get recordName records
         |> Maybe.map (\fields -> Dict.empty)
         |> Maybe.withDefault Dict.empty
 
 
-records : Dict.Dict RecordName Record
+unsafeGet : String -> Record
+unsafeGet recordName =
+    Dict.get recordName records |> Maybe.withDefault []
+
+
+records : Dict.Dict String Record
 records =
     Dict.fromList
         [ ( "job"

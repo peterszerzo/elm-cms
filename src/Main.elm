@@ -27,6 +27,7 @@ init apiUrl loc =
                 { message = ""
                 , createdAt = -1000
                 }
+          , uploadedFileUrl = Nothing
           , time = 0
           }
         , Commands.onRouteChange apiUrl route
