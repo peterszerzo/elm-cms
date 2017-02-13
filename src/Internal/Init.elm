@@ -8,14 +8,14 @@ import Internal.Commands as Commands
 
 
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
-init apiUrl loc =
+init { user, apiUrl } loc =
     let
         route =
             parse loc
     in
         ( { route = route
           , apiUrl = apiUrl
-          , user = "Alfred"
+          , user = user
           , awaiting = Nothing
           , networkError =
                 Nothing

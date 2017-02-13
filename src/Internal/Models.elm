@@ -4,10 +4,13 @@ import Regex
 import Time
 import Dict
 import Internal.Routes exposing (Route, parse)
+import Cms.Field as Field
 
 
 type alias Flags =
-    String
+    { user : String
+    , apiUrl : String
+    }
 
 
 type Operation
@@ -18,6 +21,7 @@ type Operation
 type alias Model =
     { route : Route
     , apiUrl : String
+    , user : String
     , user : String
     , awaiting :
         Maybe
@@ -38,15 +42,9 @@ type alias Model =
 -- Records
 
 
-type FieldType
-    = Text
-    | TextArea
-    | Radio (List String)
-
-
 type alias Field =
     { id : String
-    , type_ : FieldType
+    , type_ : Field.Type
     , showInListView : Bool
     , default : Maybe String
     , validation :

@@ -9,6 +9,7 @@ import Json.Decode as JD
 import Internal.Messages exposing (Msg(..))
 import Internal.Routes exposing (..)
 import Internal.Models as Models
+import Cms.Field as Field
 import Internal.Utilities as Utils
 import Internal.Styles as Styles
 
@@ -80,7 +81,7 @@ editForm records recordName dict =
                         label [ for (recordName ++ "-" ++ opts.id) ]
                             ([ text ("Enter " ++ opts.id)
                              , case opts.type_ of
-                                Models.Text ->
+                                Field.Text ->
                                     input
                                         [ id (recordName ++ "-" ++ opts.id)
                                         , value val
@@ -96,7 +97,7 @@ editForm records recordName dict =
                                         ]
                                         []
 
-                                Models.TextArea ->
+                                Field.TextArea ->
                                     textarea
                                         [ id (recordName ++ "-" ++ opts.id)
                                         , value val
@@ -112,7 +113,7 @@ editForm records recordName dict =
                                         ]
                                         []
 
-                                Models.Radio options ->
+                                Field.Radio options ->
                                     div []
                                         (List.map
                                             (\opt ->

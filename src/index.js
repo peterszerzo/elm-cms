@@ -3,7 +3,10 @@ var Elm = require('./Main.elm');
 
 var API_URL = 'http://localhost:3001/';
 
-var app = Elm.Main.embed(global.document.getElementById('root'), API_URL);
+var app = Elm.Main.embed(global.document.getElementById('root'), {
+  user: 'Alfred',
+  apiUrl: API_URL
+});
 
 // Handle file uploads
 // Callback is called every time the file input field changes.
