@@ -25,6 +25,12 @@ main =
                         , errorMessage = "Lowercase letters, numbers and dashes only. Must not be empty."
                         }
               }
+            , { id = "tags"
+              , type_ = List
+              , showInListView = True
+              , default = Nothing
+              , validation = Nothing
+              }
             , { id = "title"
               , type_ = Text
               , showInListView = True

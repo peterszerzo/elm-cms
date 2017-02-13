@@ -56,6 +56,93 @@ loader =
     p [] [ text "Loading entries..." ]
 
 
+textInputAttrs : String -> String -> String -> Bool -> List (Html.Attribute Msg)
+textInputAttrs id_ idName val isValid =
+    [ id idName
+    , value val
+    , onInput (ChangeField id_)
+    , style
+        [ ( "border-color"
+          , if isValid then
+                ""
+            else
+                Styles.red
+          )
+        ]
+    ]
+
+
+editFormField opts recordName val isValid errorMessage =
+    label [ for (recordName ++ "-" ++ opts.id) ]
+        ([ text ("Enter " ++ opts.id)
+         , case opts.type_ of
+            Field.List ->
+                let
+                    chunks =
+                        String.split "||" val
+                in
+                    div []
+                        (chunks
+                            |> List.indexedMap
+                                (\index chunk ->
+                                    input
+                                        [ value chunk
+                                        , onInput
+                                            (\newChunk ->
+                                                ChangeField opts.id
+                                                    (chunks
+                                                        |> List.indexedMap
+                                                            (\index1 chunk ->
+                                                                if index == index1 then
+                                                                    newChunk
+                                                                else
+                                                                    chunk
+                                                            )
+                                                        |> String.join "||"
+                                                    )
+                                            )
+                                        ]
+                                        []
+                                )
+                        )
+
+            Field.Text ->
+                input
+                    (textInputAttrs opts.id (recordName ++ "-" ++ opts.id) val isValid)
+                    []
+
+            Field.TextArea ->
+                textarea
+                    (textInputAttrs opts.id (recordName ++ "-" ++ opts.id) val isValid)
+                    []
+
+            Field.Radio options ->
+                div []
+                    (List.map
+                        (\opt ->
+                            div []
+                                [ input
+                                    [ type_ "radio"
+                                    , name opts.id
+                                    , checked (val == opt)
+                                    , onCheck (\isChecked -> ChangeField opts.id opt)
+                                    ]
+                                    []
+                                , text opt
+                                ]
+                        )
+                        options
+                    )
+         ]
+            ++ (if isValid then
+                    []
+                else
+                    [ p [ style [ ( "color", Styles.red ) ], class "validation-error" ] [ text errorMessage ]
+                    ]
+               )
+        )
+
+
 editForm : Models.Records -> String -> Dict.Dict String String -> Html Msg
 editForm records recordName dict =
     let
@@ -65,79 +152,20 @@ editForm records recordName dict =
     in
         form []
             (List.map
-                (\opts ->
+                (\field ->
                     let
                         val =
-                            (Dict.get opts.id dict |> Maybe.withDefault "")
+                            (Dict.get field.id dict |> Maybe.withDefault "")
 
                         ( isValid, errorMessage ) =
-                            opts.validation
+                            field.validation
                                 |> Maybe.map
                                     (\validation ->
                                         ( Regex.contains validation.regex val, validation.errorMessage )
                                     )
                                 |> Maybe.withDefault ( True, "" )
                     in
-                        label [ for (recordName ++ "-" ++ opts.id) ]
-                            ([ text ("Enter " ++ opts.id)
-                             , case opts.type_ of
-                                Field.Text ->
-                                    input
-                                        [ id (recordName ++ "-" ++ opts.id)
-                                        , value val
-                                        , onInput (ChangeField opts.id)
-                                        , style
-                                            [ ( "border-color"
-                                              , if isValid then
-                                                    ""
-                                                else
-                                                    Styles.red
-                                              )
-                                            ]
-                                        ]
-                                        []
-
-                                Field.TextArea ->
-                                    textarea
-                                        [ id (recordName ++ "-" ++ opts.id)
-                                        , value val
-                                        , onInput (ChangeField opts.id)
-                                        , style
-                                            [ ( "border-color"
-                                              , if isValid then
-                                                    ""
-                                                else
-                                                    Styles.red
-                                              )
-                                            ]
-                                        ]
-                                        []
-
-                                Field.Radio options ->
-                                    div []
-                                        (List.map
-                                            (\opt ->
-                                                div []
-                                                    [ input
-                                                        [ type_ "radio"
-                                                        , name opts.id
-                                                        , checked (val == opt)
-                                                        , onCheck (\isChecked -> ChangeField opts.id opt)
-                                                        ]
-                                                        []
-                                                    , text opt
-                                                    ]
-                                            )
-                                            options
-                                        )
-                             ]
-                                ++ (if isValid then
-                                        []
-                                    else
-                                        [ p [ style [ ( "color", Styles.red ) ], class "validation-error" ] [ text errorMessage ]
-                                        ]
-                                   )
-                            )
+                        editFormField field recordName val isValid errorMessage
                 )
                 fields
             )
