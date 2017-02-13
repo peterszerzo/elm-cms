@@ -4,7 +4,6 @@ module Cms exposing (..)
 
 @docs program
 @docs Record
-@docs Records
 @docs Model
 @docs Flags
 @docs Msg
@@ -22,30 +21,32 @@ import Internal.Subscriptions exposing (subscriptions)
 
 
 {-| Record
+
+    Describes a record.
 -}
 type alias Record =
     Models.Record
 
 
-{-| Records
--}
-type alias Records =
-    List ( String, Record )
-
-
 {-| Model
+
+    Type annotation for program model.
 -}
 type alias Model =
     Models.Model
 
 
 {-| Flags
+
+    Type annotation for program flags.
 -}
 type alias Flags =
     Models.Flags
 
 
 {-| Msg
+
+    Type annotation for the program's message.
 -}
 type alias Msg =
     Messages.Msg
@@ -55,7 +56,7 @@ type alias Msg =
 
     program []
 -}
-program : Records -> Program Models.Flags Models.Model Messages.Msg
+program : List ( String, Record ) -> Program Models.Flags Models.Model Messages.Msg
 program recs =
     let
         records =

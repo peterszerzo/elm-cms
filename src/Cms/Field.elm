@@ -7,6 +7,8 @@ module Cms.Field exposing (..)
 
 
 {-| Type
+
+    Describes a form input type used to define a field in a particular record.
 -}
 type Type
     = Text
