@@ -1,14 +1,16 @@
 module Views exposing (..)
 
 import Dict
+import Regex
 import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
-import Html.Attributes exposing (class, classList, href, value, for, id, type_)
+import Html.Attributes exposing (class, style, classList, href, value, for, id, type_)
 import Html.Events exposing (onClick, onInput, on)
 import Messages exposing (Msg(..))
 import Records
 import Routes exposing (..)
 import Models exposing (Model)
 import Utilities
+import Styles
 import Json.Decode as JD
 
 
@@ -64,19 +66,46 @@ editForm recordName dict =
         form []
             (List.map
                 (\opts ->
-                    label [ for (recordName ++ "-" ++ opts.id) ]
-                        [ text ("Enter " ++ opts.id)
-                        , (if opts.type_ == Models.Text then
-                            input
-                           else
-                            textarea
-                          )
-                            [ id (recordName ++ "-" ++ opts.id)
-                            , value (Dict.get opts.id dict |> Maybe.withDefault "")
-                            , onInput (ChangeField opts.id)
-                            ]
-                            []
-                        ]
+                    let
+                        val =
+                            (Dict.get opts.id dict |> Maybe.withDefault "")
+
+                        ( isValid, errorMessage ) =
+                            opts.validation
+                                |> Maybe.map
+                                    (\validation ->
+                                        ( Regex.contains validation.regex val, validation.errorMessage )
+                                    )
+                                |> Maybe.withDefault ( True, "" )
+                    in
+                        label [ for (recordName ++ "-" ++ opts.id) ]
+                            ([ text ("Enter " ++ opts.id)
+                             , (if opts.type_ == Models.Text then
+                                    input
+                                else
+                                    textarea
+                               )
+                                [ id (recordName ++ "-" ++ opts.id)
+                                , value val
+                                , onInput (ChangeField opts.id)
+                                , style
+                                    [ ( "border-color"
+                                      , if isValid then
+                                            ""
+                                        else
+                                            Styles.red
+                                      )
+                                    ]
+                                ]
+                                []
+                             ]
+                                ++ (if isValid then
+                                        []
+                                    else
+                                        [ p [ style [ ( "color", Styles.red ) ], class "validation-error" ] [ text errorMessage ]
+                                        ]
+                                   )
+                            )
                 )
                 fields
             )
@@ -137,19 +166,26 @@ content model =
                 Saved dict ->
                     div [ class "content" ]
                         [ h1 [] [ text "Edit" ]
-                        , p [ class "status" ] [ text "All saved :)." ]
+                        , div [ class "status" ]
+                            [ p [] [ text "All saved :)." ]
+                            ]
                         , editForm record dict
                         ]
 
                 UnsavedChanges dict ->
                     div [ class "content" ]
                         [ h1 [] [ text "Edit" ]
-                        , p [ class "status" ]
-                            [ text "You have unsaved changes."
-                            , button
-                                [ onClick RequestUpdate
+                        , div [ class "status" ]
+                            [ p []
+                                [ text "You have unsaved changes."
                                 ]
-                                [ text "Save" ]
+                            , if (Records.isValid record dict) then
+                                button
+                                    [ onClick RequestUpdate
+                                    ]
+                                    [ text "Save" ]
+                              else
+                                p [] [ text "Cannot save.. see validation errors below:" ]
                             ]
                         , editForm record dict
                         ]
@@ -157,8 +193,10 @@ content model =
                 New dict ->
                     div [ class "content" ]
                         [ h1 [] [ text "New" ]
-                        , p [ class "status" ]
-                            [ text "This record has not yet been saved."
+                        , div [ class "status" ]
+                            [ p []
+                                [ text "This record has not yet been saved."
+                                ]
                             , button
                                 [ onClick RequestSave
                                 ]

@@ -70,7 +70,15 @@ updateRequest apiUrl recordName id dict =
                     (dict
                         |> Dict.insert "id" id
                         |> Dict.toList
-                        |> List.map (\( key, value ) -> ( key, JE.string value ))
+                        |> List.map
+                            (\( key, value ) ->
+                                ( key
+                                , if value == "" then
+                                    JE.null
+                                  else
+                                    JE.string value
+                                )
+                            )
                         |> JE.object
                         |> JE.encode 2
                     )
@@ -78,5 +86,4 @@ updateRequest apiUrl recordName id dict =
             , timeout = Nothing
             , withCredentials = False
             }
-            |> Debug.log "updatereq"
         )

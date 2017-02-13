@@ -1,7 +1,8 @@
 module Models exposing (..)
 
-import Routes exposing (Route, parse)
+import Regex
 import Time
+import Routes exposing (Route, parse)
 
 
 type alias Flags =
@@ -46,7 +47,11 @@ type alias Field =
     , type_ : FieldType
     , showInListView : Bool
     , default : Maybe String
-    , isRequired : Bool
+    , validation :
+        Maybe
+            { regex : Regex.Regex
+            , errorMessage : String
+            }
     }
 
 
