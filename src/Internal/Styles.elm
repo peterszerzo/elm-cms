@@ -1,4 +1,4 @@
-module Styles exposing (..)
+module Internal.Styles exposing (..)
 
 
 blue : String

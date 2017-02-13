@@ -1,21 +1,21 @@
-module Commands exposing (..)
+module Internal.Commands exposing (..)
 
 import Http
 import Json.Encode as JE
 import Dict
-import Messages exposing (Msg(..))
-import Routes exposing (Route(..))
-import Utilities
+import Internal.Messages exposing (Msg(..))
+import Internal.Routes exposing (Route(..))
+import Internal.Utilities as Utils
 
 
 onRouteChange : String -> Route -> Cmd Msg
 onRouteChange apiUrl route =
     case route of
         List record routeData ->
-            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utilities.pluralize record))
+            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize record))
 
         Show record id routeData ->
-            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utilities.pluralize record) ++ "/" ++ id)
+            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize record) ++ "/" ++ id)
 
         _ ->
             Cmd.none
@@ -27,7 +27,7 @@ createRequest apiUrl recordName id dict =
         Http.request
             { method = "POST"
             , headers = []
-            , url = (apiUrl ++ (Utilities.pluralize recordName))
+            , url = (apiUrl ++ (Utils.pluralize recordName))
             , body =
                 Http.stringBody "application/json"
                     (dict
@@ -64,7 +64,7 @@ updateRequest apiUrl recordName id dict =
         (Http.request
             { method = "PATCH"
             , headers = []
-            , url = (apiUrl ++ (Utilities.pluralize recordName) ++ "/" ++ id)
+            , url = (apiUrl ++ (Utils.pluralize recordName) ++ "/" ++ id)
             , body =
                 Http.stringBody "application/json"
                     (dict

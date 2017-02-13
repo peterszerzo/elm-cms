@@ -1,17 +1,16 @@
-module Views exposing (..)
+module Internal.Views exposing (..)
 
 import Dict
 import Regex
 import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
 import Html.Attributes exposing (class, style, classList, href, value, for, id, type_, name, checked)
 import Html.Events exposing (onClick, onInput, onCheck, on)
-import Messages exposing (Msg(..))
-import Records
-import Routes exposing (..)
-import Models exposing (Model)
-import Utilities
-import Styles
 import Json.Decode as JD
+import Internal.Messages exposing (Msg(..))
+import Internal.Routes exposing (..)
+import Internal.Models as Models
+import Internal.Utilities as Utils
+import Internal.Styles as Styles
 
 
 link : ( String, String ) -> Html Msg
@@ -19,8 +18,8 @@ link ( label, url ) =
     a [ href "javascript:void(0)", onClick (Navigate url) ] [ text label ]
 
 
-recordListItem : String -> Dict.Dict String String -> Html Msg
-recordListItem recordName rec =
+recordListItem : Models.Records -> String -> Dict.Dict String String -> Html Msg
+recordListItem records recordName rec =
     li [ class "record" ]
         [ ul
             [ class "record-fields"
@@ -30,7 +29,7 @@ recordListItem recordName rec =
                     (\( id, _ ) ->
                         id
                             == "id"
-                            || (Dict.get recordName Records.records
+                            || (Dict.get recordName records
                                     |> Maybe.map (List.filter (\field -> field.showInListView))
                                     |> Maybe.map (List.map .id)
                                     |> Maybe.map (List.member id)
@@ -45,7 +44,7 @@ recordListItem recordName rec =
                     )
             )
         , div [ class "record__nav" ]
-            [ link ( "Edit", "/" ++ (Utilities.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
+            [ link ( "Edit", "/" ++ (Utils.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
             , a [ href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
             ]
         ]
@@ -56,11 +55,11 @@ loader =
     p [] [ text "Loading entries..." ]
 
 
-editForm : String -> Dict.Dict String String -> Html Msg
-editForm recordName dict =
+editForm : Models.Records -> String -> Dict.Dict String String -> Html Msg
+editForm records recordName dict =
     let
         fields =
-            Dict.get recordName Records.records
+            Dict.get recordName records
                 |> Maybe.withDefault []
     in
         form []
@@ -143,8 +142,8 @@ editForm recordName dict =
             )
 
 
-content : Model -> Html Msg
-content model =
+content : Models.Records -> Models.Model -> Html Msg
+content records model =
     case model.route of
         Home ->
             div [ class "content" ]
@@ -152,15 +151,15 @@ content model =
                 , div [ class "status" ]
                     [ p [] [ text "Would you like to work on some..." ]
                     , ul []
-                        (Records.records
+                        (records
                             |> Dict.toList
                             |> List.map Tuple.first
                             |> List.map
                                 (\recordName ->
                                     li []
                                         [ link
-                                            ( (Utilities.pluralize recordName)
-                                            , "/" ++ (Utilities.pluralize recordName)
+                                            ( (Utils.pluralize recordName)
+                                            , "/" ++ (Utils.pluralize recordName)
                                             )
                                         ]
                                 )
@@ -168,29 +167,29 @@ content model =
                     ]
                 ]
 
-        List record listData ->
+        List recordName listData ->
             let
                 dataView =
                     case listData of
                         LoadingList ->
                             loader
 
-                        Loaded records ->
+                        Loaded listItems ->
                             ul [ class "records" ]
-                                (records
-                                    |> List.map (recordListItem record)
+                                (listItems
+                                    |> List.map (recordListItem records recordName)
                                 )
 
                         _ ->
                             p [] [ text "Something is not implemented." ]
             in
                 div [ class "content" ]
-                    [ h1 [] [ text ("Listing " ++ record ++ "s") ]
-                    , div [ class "status" ] [ a [ href "javascript:void(0)", onClick (RequestNewRecordId record) ] [ text "Add new" ] ]
+                    [ h1 [] [ text ("Listing " ++ recordName ++ "s") ]
+                    , div [ class "status" ] [ a [ href "javascript:void(0)", onClick (RequestNewRecordId recordName) ] [ text "Add new" ] ]
                     , dataView
                     ]
 
-        Show record id showData ->
+        Show recordName id showData ->
             case showData of
                 LoadingShow ->
                     div [ class "content" ] [ loader ]
@@ -201,7 +200,7 @@ content model =
                         , div [ class "status" ]
                             [ p [] [ text "All saved :)." ]
                             ]
-                        , editForm record dict
+                        , editForm records recordName dict
                         ]
 
                 UnsavedChanges dict ->
@@ -211,7 +210,7 @@ content model =
                             [ p []
                                 [ text "You have unsaved changes."
                                 ]
-                            , if (Records.isValid record dict) then
+                            , if (Models.isRecordValid records recordName dict) then
                                 button
                                     [ onClick RequestUpdate
                                     ]
@@ -219,7 +218,7 @@ content model =
                               else
                                 p [] [ text "Cannot save.. see validation errors below:" ]
                             ]
-                        , editForm record dict
+                        , editForm records recordName dict
                         ]
 
                 New dict ->
@@ -234,7 +233,7 @@ content model =
                                 ]
                                 [ text "Save" ]
                             ]
-                        , editForm record dict
+                        , editForm records recordName dict
                         ]
 
                 _ ->
@@ -267,11 +266,11 @@ fileUpload maybeUrl =
         ]
 
 
-view : Model -> Html Msg
-view model =
+view : Models.Records -> Models.Model -> Html Msg
+view records model =
     div [ class "container" ]
         [ header [ class "header" ] [ link ( "elm-cms", "/" ) ]
-        , content model
+        , content records model
         , fileUpload model.uploadedFileUrl
         , div
             [ classList

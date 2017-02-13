@@ -1,4 +1,4 @@
-module Utilities exposing (..)
+module Internal.Utilities exposing (..)
 
 
 pluralize : String -> String

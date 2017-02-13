@@ -1,15 +1,14 @@
-module Update exposing (update)
+module Internal.Update exposing (update)
 
 import Dict
 import Random
 import Navigation
-import Models exposing (Model)
-import Messages exposing (Msg(..))
-import Commands
-import Routes exposing (..)
 import Json.Decode as JD
-import Records
-import Ports
+import Internal.Models as Models exposing (Model, Records, createRecord)
+import Internal.Messages exposing (Msg(..))
+import Internal.Commands as Commands
+import Internal.Routes exposing (..)
+import Internal.Ports as Ports
 
 
 decodeRecord : JD.Decoder (Dict.Dict String String)
@@ -22,8 +21,8 @@ decodeRecords =
     JD.list decodeRecord
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Records -> Msg -> Model -> ( Model, Cmd Msg )
+update records msg model =
     case msg of
         ChangeRoute route ->
             ( { model | route = route }, Commands.onRouteChange model.apiUrl route )
@@ -109,7 +108,7 @@ update msg model =
             case model.route of
                 -- When the app navigates to the edit link of a not-yet-created record, we expect a 404
                 Show recordName id LoadingShow ->
-                    ( { model | route = Show recordName id (Records.create recordName id |> New) }, Cmd.none )
+                    ( { model | route = Show recordName id (createRecord records recordName id |> New) }, Cmd.none )
 
                 _ ->
                     ( { model

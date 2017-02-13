@@ -1,4 +1,4 @@
-module Routes exposing (..)
+module Internal.Routes exposing (..)
 
 import Dict
 import Navigation

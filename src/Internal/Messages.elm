@@ -1,8 +1,8 @@
-module Messages exposing (..)
+module Internal.Messages exposing (..)
 
 import Http
 import Time
-import Routes exposing (Route)
+import Internal.Routes exposing (Route)
 
 
 -- String arguments in tagged unions represent the record name first and record id second
