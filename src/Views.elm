@@ -121,7 +121,7 @@ editForm recordName dict =
                                                     [ input
                                                         [ type_ "radio"
                                                         , name opts.id
-                                                        , checked (List.member val options)
+                                                        , checked (val == opt)
                                                         , onCheck (\isChecked -> ChangeField opts.id opt)
                                                         ]
                                                         []

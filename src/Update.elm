@@ -14,12 +14,12 @@ import Ports
 
 decodeRecord : JD.Decoder (Dict.Dict String String)
 decodeRecord =
-    JD.dict JD.string
+    JD.dict (JD.oneOf [ JD.string, JD.null "" ])
 
 
 decodeRecords : JD.Decoder (List (Dict.Dict String String))
 decodeRecords =
-    JD.list (JD.dict JD.string)
+    JD.list decodeRecord
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
