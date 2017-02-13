@@ -52,7 +52,13 @@ records : Dict.Dict String Record
 records =
     Dict.fromList
         [ ( "job"
-          , [ { id = "slug"
+          , [ { id = "isPublished"
+              , type_ = Radio [ "yes", "no" ]
+              , showInListView = True
+              , default = Just "no"
+              , validation = Nothing
+              }
+            , { id = "slug"
               , type_ = Text
               , showInListView = True
               , default = Just "some-fantastic-job"

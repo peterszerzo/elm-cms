@@ -3,8 +3,8 @@ module Views exposing (..)
 import Dict
 import Regex
 import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
-import Html.Attributes exposing (class, style, classList, href, value, for, id, type_)
-import Html.Events exposing (onClick, onInput, on)
+import Html.Attributes exposing (class, style, classList, href, value, for, id, type_, name, checked)
+import Html.Events exposing (onClick, onInput, onCheck, on)
 import Messages exposing (Msg(..))
 import Records
 import Routes exposing (..)
@@ -80,24 +80,56 @@ editForm recordName dict =
                     in
                         label [ for (recordName ++ "-" ++ opts.id) ]
                             ([ text ("Enter " ++ opts.id)
-                             , (if opts.type_ == Models.Text then
+                             , case opts.type_ of
+                                Models.Text ->
                                     input
-                                else
+                                        [ id (recordName ++ "-" ++ opts.id)
+                                        , value val
+                                        , onInput (ChangeField opts.id)
+                                        , style
+                                            [ ( "border-color"
+                                              , if isValid then
+                                                    ""
+                                                else
+                                                    Styles.red
+                                              )
+                                            ]
+                                        ]
+                                        []
+
+                                Models.TextArea ->
                                     textarea
-                               )
-                                [ id (recordName ++ "-" ++ opts.id)
-                                , value val
-                                , onInput (ChangeField opts.id)
-                                , style
-                                    [ ( "border-color"
-                                      , if isValid then
-                                            ""
-                                        else
-                                            Styles.red
-                                      )
-                                    ]
-                                ]
-                                []
+                                        [ id (recordName ++ "-" ++ opts.id)
+                                        , value val
+                                        , onInput (ChangeField opts.id)
+                                        , style
+                                            [ ( "border-color"
+                                              , if isValid then
+                                                    ""
+                                                else
+                                                    Styles.red
+                                              )
+                                            ]
+                                        ]
+                                        []
+
+                                Models.Radio options ->
+                                    div []
+                                        (List.map
+                                            (\opt ->
+                                                div []
+                                                    [ input
+                                                        [ type_ "radio"
+                                                        , name opts.id
+                                                        , checked (List.member val options)
+                                                        , onCheck (\isChecked -> ChangeField opts.id opt)
+                                                        ]
+                                                        []
+                                                    , text opt
+                                                    ]
+                                            )
+                                            options
+                                        )
                              ]
                                 ++ (if isValid then
                                         []

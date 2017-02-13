@@ -40,6 +40,7 @@ type alias Model =
 type FieldType
     = Text
     | TextArea
+    | Radio (List String)
 
 
 type alias Field =
