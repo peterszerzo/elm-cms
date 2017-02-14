@@ -6,6 +6,11 @@ black =
     "rgb(0, 0, 0)"
 
 
+lightGrey : String
+lightGrey =
+    "rgb(200, 200, 200)"
+
+
 white : String
 white =
     "rgb(255, 255, 255)"
@@ -39,6 +44,22 @@ borderRadius =
 red : String
 red =
     "rgb(255, 25, 26)"
+
+
+remark : List ( String, String )
+remark =
+    [ ( "font-style", "italic" )
+    , ( "font-size", "10px" )
+    , ( "margin-top", "0" )
+    ]
+
+
+link : List ( String, String )
+link =
+    [ ( "color", blue )
+    , ( "margin", "2px" )
+    , ( "display", "inline-block" )
+    ]
 
 
 container : List ( String, String )
@@ -197,11 +218,6 @@ markdownContainer : List ( String, String )
 markdownContainer =
     [ ( "display", "flex" )
     , ( "background", white )
-    , ( "padding", "20px" )
-    , ( "border-width", "1px" )
-    , ( "border-style", "solid" )
-    , ( "border-radius", borderRadius )
-    , ( "border-color", faintBlue )
     , ( "z-index", "12" )
     ]
 
@@ -209,10 +225,28 @@ markdownContainer =
 markdownContainerExpanded : List ( String, String )
 markdownContainerExpanded =
     [ ( "position", "fixed" )
+    , ( "padding", "60px 20px 20px" )
     , ( "top", "0" )
     , ( "left", "0" )
     , ( "right", "0" )
     , ( "bottom", "0" )
+    , ( "border-width", "1px" )
+    , ( "border-style", "solid" )
+    , ( "border-radius", borderRadius )
+    , ( "border-color", faintBlue )
+    ]
+
+
+markdownPreview : List ( String, String )
+markdownPreview =
+    textInput ++ [ ( "border-color", faintBlue ), ( "max-height", "50px" ), ( "overflow", "auto" ) ]
+
+
+markdownRendered : List ( String, String )
+markdownRendered =
+    [ ( "width", "50%" )
+    , ( "padding", "20px" )
+    , ( "overflow", "auto" )
     ]
 
 
@@ -222,5 +256,11 @@ close =
     , ( "top", "20px" )
     , ( "right", "20px" )
     , ( "color", black )
-    , ( "padding", "10px" )
+    , ( "background", blue )
+    , ( "width", "30px" )
+    , ( "height", "30px" )
+    , ( "padding", "7px" )
+    , ( "border-radius", "50%" )
+    , ( "color", white )
+    , ( "text-align", "center" )
     ]

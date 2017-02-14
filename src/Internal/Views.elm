@@ -17,7 +17,7 @@ import Internal.Styles as Styles
 
 link : List (Attribute Msg) -> ( String, String ) -> Html Msg
 link attrs ( label, url ) =
-    a [ href "javascript:void(0)", onClick (Navigate url) ] [ text label ]
+    a [ style Styles.link, href "javascript:void(0)", onClick (Navigate url) ] [ text label ]
 
 
 recordListItem : Models.Records -> String -> Dict.Dict String String -> Html Msg
@@ -54,7 +54,7 @@ recordListItem records recordName rec =
 
 loader : Html Msg
 loader =
-    p [] [ text "Loading entries..." ]
+    p [] [ text "Loading, please wait..." ]
 
 
 editFormField : Models.Field -> String -> Bool -> String -> Html Msg
@@ -133,31 +133,51 @@ editFormField field recordName isFocused val =
                                    )
                             )
                         ]
-                        [ textarea
-                            [ id idName
-                            , value val
-                            , onInput (ChangeField field.id)
-                            , onFocus (SetFocusedField (Just field.id))
-                            , onBlur (SetFocusedField Nothing)
-                            , style
-                                (Styles.textInput
-                                    ++ [ ( "border-color"
-                                         , if isValid then
-                                            (if isFocused then
-                                                Styles.blue
-                                             else
-                                                Styles.faintBlue
-                                            )
-                                           else
-                                            Styles.red
-                                         )
-                                       ]
-                                    ++ [ ( "width", "50%" ) ]
-                                )
+                        (if isFocused then
+                            [ textarea
+                                [ id idName
+                                , value val
+                                , onInput (ChangeField field.id)
+                                , style
+                                    (Styles.textInput
+                                        ++ [ ( "border-color"
+                                             , if isValid then
+                                                (if isFocused then
+                                                    Styles.blue
+                                                 else
+                                                    Styles.faintBlue
+                                                )
+                                               else
+                                                Styles.red
+                                             )
+                                           ]
+                                        ++ (if isFocused then
+                                                [ ( "width", "50%" ) ]
+                                            else
+                                                []
+                                           )
+                                    )
+                                ]
+                                []
+                            , Markdown.toHtml [ style Styles.markdownRendered ] val
+                            , div
+                                [ style Styles.close
+                                , onClick (SetFocusedField Nothing)
+                                ]
+                                [ text "✕" ]
                             ]
-                            []
-                        , Markdown.toHtml [ style [ ( "width", "50%" ), ( "padding", "20px" ) ] ] val
-                        ]
+                         else
+                            [ div [ style Styles.markdownPreview, onClick (SetFocusedField (Just field.id)) ]
+                                [ p [ style Styles.remark ] [ text "This is a preview. Click to expand editor." ]
+                                , text
+                                    (if val == "" then
+                                        "Content is empty."
+                                     else
+                                        val
+                                    )
+                                ]
+                            ]
+                        )
 
                 Field.Radio options ->
                     div []
@@ -309,10 +329,13 @@ content records model =
                         ]
                         (editForm records recordName focusedField dict)
 
+                Saving dict ->
+                    layout "Edit"
+                        []
+                        loader
+
                 _ ->
-                    div [ style Styles.content ]
-                        [ h1 [] [ text "View not implemented" ]
-                        ]
+                    layout "View not implemented" [] (div [] [])
 
         NotFound error ->
             layout "Not found" [] (text ("Error: " ++ error))

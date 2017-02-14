@@ -79,27 +79,21 @@ update records msg model =
                             in
                                 ( { model | route = Show recordName id focusedField status }, Cmd.none )
 
-                        Show recordName id focusedField (New dict) ->
-                            ( { model
-                                | route = Show recordName id focusedField (Saved dict)
-                                , flash =
-                                    { message = recordName ++ " successfully created, id = " ++ id
-                                    , createdAt = model.time
-                                    }
-                              }
-                            , Cmd.none
-                            )
+                        Show recordName id focusedField status ->
+                            let
+                                ( newStatus, newFlash ) =
+                                    case status of
+                                        Saving dict ->
+                                            ( Saved dict
+                                            , { message = recordName ++ " successfully saved, id = " ++ id
+                                              , createdAt = model.time
+                                              }
+                                            )
 
-                        Show recordName id focusedField (UnsavedChanges dict) ->
-                            ( { model
-                                | route = Show recordName id focusedField (Saved dict)
-                                , flash =
-                                    { message = recordName ++ " successfully updated, id = " ++ id
-                                    , createdAt = model.time
-                                    }
-                              }
-                            , Cmd.none
-                            )
+                                        _ ->
+                                            ( status, model.flash )
+                            in
+                                ( { model | route = Show recordName id focusedField newStatus, flash = newFlash }, Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -144,7 +138,7 @@ update records msg model =
         RequestSave ->
             case model.route of
                 Show recordName id focusedField (New dict) ->
-                    ( model, Commands.createRequest model.apiUrl recordName id dict )
+                    ( { model | route = Show recordName id focusedField (Saving dict) }, Commands.createRequest model.apiUrl recordName id dict )
 
                 _ ->
                     ( model, Cmd.none )
@@ -152,7 +146,7 @@ update records msg model =
         RequestUpdate ->
             case model.route of
                 Show recordName id focusedField (UnsavedChanges dict) ->
-                    ( model, Commands.updateRequest model.apiUrl recordName id dict )
+                    ( { model | route = Show recordName id focusedField (Saving dict) }, Commands.updateRequest model.apiUrl recordName id dict )
 
                 _ ->
                     ( model, Cmd.none )
