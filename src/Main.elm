@@ -63,6 +63,31 @@ main =
               }
             ]
           )
+        , ( "staticPage"
+          , [ { id = "isPublished"
+              , type_ = Radio [ "yes", "no" ]
+              , showInListView = True
+              , default = Just "no"
+              , validation = Nothing
+              }
+            , { id = "slug"
+              , type_ = Text
+              , showInListView = True
+              , default = Just "some-fantastic-job"
+              , validation =
+                    Just
+                        { regex = Regex.regex "^([a-z]|[0-9]|-)+$"
+                        , errorMessage = "Lowercase letters, numbers and dashes only. Must not be empty."
+                        }
+              }
+            , { id = "content"
+              , type_ = Markdown
+              , showInListView = False
+              , default = Nothing
+              , validation = Nothing
+              }
+            ]
+          )
         , ( "headerLink"
           , [ { id = "label"
               , type_ = Text

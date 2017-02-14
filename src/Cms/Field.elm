@@ -13,4 +13,5 @@ module Cms.Field exposing (..)
 type Type
     = Text
     | TextArea
+    | Markdown
     | Radio (List String)

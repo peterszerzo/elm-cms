@@ -181,3 +181,26 @@ radio =
     , ( "width", "auto" )
     , ( "margin-right", "5px" )
     ]
+
+
+markdownContainer : List ( String, String )
+markdownContainer =
+    [ ( "display", "flex" )
+    , ( "background", "#FFF" )
+    , ( "padding", "20px" )
+    , ( "border-width", "1px" )
+    , ( "border-style", "solid" )
+    , ( "border-radius", borderRadius )
+    , ( "border-color", faintBlue )
+    , ( "z-index", "12" )
+    ]
+
+
+markdownContainerExpanded : List ( String, String )
+markdownContainerExpanded =
+    [ ( "position", "fixed" )
+    , ( "top", "10px" )
+    , ( "left", "10px" )
+    , ( "right", "10px" )
+    , ( "bottom", "10px" )
+    ]

@@ -6,6 +6,7 @@ import Html exposing (Html, Attribute, header, text, div, img, h1, a, p, ul, li,
 import Html.Attributes exposing (class, style, classList, href, value, for, id, type_, name, checked)
 import Html.Events exposing (onClick, onInput, onCheck, onFocus, onBlur, on)
 import Json.Decode as JD
+import Markdown
 import Internal.Messages exposing (Msg(..))
 import Internal.Routes exposing (..)
 import Internal.Models as Models
@@ -108,7 +109,11 @@ editFormField field recordName isFocused val =
                             (Styles.textInput
                                 ++ [ ( "border-color"
                                      , if isValid then
-                                        Styles.faintBlue
+                                        (if isFocused then
+                                            Styles.blue
+                                         else
+                                            Styles.faintBlue
+                                        )
                                        else
                                         Styles.red
                                      )
@@ -116,6 +121,43 @@ editFormField field recordName isFocused val =
                             )
                         ]
                         []
+
+                Field.Markdown ->
+                    div
+                        [ style
+                            (Styles.markdownContainer
+                                ++ (if isFocused then
+                                        Styles.markdownContainerExpanded
+                                    else
+                                        []
+                                   )
+                            )
+                        ]
+                        [ textarea
+                            [ id idName
+                            , value val
+                            , onInput (ChangeField field.id)
+                            , onFocus (SetFocusedField (Just field.id))
+                            , onBlur (SetFocusedField Nothing)
+                            , style
+                                (Styles.textInput
+                                    ++ [ ( "border-color"
+                                         , if isValid then
+                                            (if isFocused then
+                                                Styles.blue
+                                             else
+                                                Styles.faintBlue
+                                            )
+                                           else
+                                            Styles.red
+                                         )
+                                       ]
+                                    ++ [ ( "width", "50%" ) ]
+                                )
+                            ]
+                            []
+                        , Markdown.toHtml [ style [ ( "width", "50%" ), ( "padding", "20px" ) ] ] val
+                        ]
 
                 Field.Radio options ->
                     div []
