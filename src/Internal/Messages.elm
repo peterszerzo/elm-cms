@@ -12,6 +12,7 @@ type Msg
     = ChangeRoute Route
     | Navigate String
     | ChangeField String String
+    | SetFocusedField (Maybe String)
     | RequestSave
     | RequestUpdate
     | RequestDelete String String

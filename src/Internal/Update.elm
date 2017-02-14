@@ -63,9 +63,9 @@ update records msg model =
                             in
                                 ( { model | route = List record data }, Cmd.none )
 
-                        Show recordName id LoadingShow ->
+                        Show recordName id focusedField LoadingShow ->
                             let
-                                data =
+                                status =
                                     resString
                                         |> JD.decodeString decodeRecord
                                         |> (\res ->
@@ -77,11 +77,11 @@ update records msg model =
                                                         ShowError ("Could not decode: " ++ resString)
                                            )
                             in
-                                ( { model | route = Show recordName id data }, Cmd.none )
+                                ( { model | route = Show recordName id focusedField status }, Cmd.none )
 
-                        Show recordName id (New dict) ->
+                        Show recordName id focusedField (New dict) ->
                             ( { model
-                                | route = Show recordName id (Saved dict)
+                                | route = Show recordName id focusedField (Saved dict)
                                 , flash =
                                     { message = recordName ++ " successfully created, id = " ++ id
                                     , createdAt = model.time
@@ -90,9 +90,9 @@ update records msg model =
                             , Cmd.none
                             )
 
-                        Show recordName id (UnsavedChanges dict) ->
+                        Show recordName id focusedField (UnsavedChanges dict) ->
                             ( { model
-                                | route = Show recordName id (Saved dict)
+                                | route = Show recordName id focusedField (Saved dict)
                                 , flash =
                                     { message = recordName ++ " successfully updated, id = " ++ id
                                     , createdAt = model.time
@@ -107,8 +107,8 @@ update records msg model =
         ReceiveHttp (Err err) ->
             case model.route of
                 -- When the app navigates to the edit link of a not-yet-created record, we expect a 404
-                Show recordName id LoadingShow ->
-                    ( { model | route = Show recordName id (createRecord records recordName id |> New) }, Cmd.none )
+                Show recordName id focusedField LoadingShow ->
+                    ( { model | route = Show recordName id focusedField (createRecord records recordName id |> New) }, Cmd.none )
 
                 _ ->
                     ( { model
@@ -143,7 +143,7 @@ update records msg model =
 
         RequestSave ->
             case model.route of
-                Show recordName id (New dict) ->
+                Show recordName id focusedField (New dict) ->
                     ( model, Commands.createRequest model.apiUrl recordName id dict )
 
                 _ ->
@@ -151,7 +151,7 @@ update records msg model =
 
         RequestUpdate ->
             case model.route of
-                Show recordName id (UnsavedChanges dict) ->
+                Show recordName id focusedField (UnsavedChanges dict) ->
                     ( model, Commands.updateRequest model.apiUrl recordName id dict )
 
                 _ ->
@@ -187,19 +187,42 @@ update records msg model =
             let
                 newRoute =
                     case model.route of
-                        Show recordName id showData ->
-                            case showData of
+                        Show recordName id focusedField status ->
+                            case status of
                                 Saved dict ->
                                     UnsavedChanges (Dict.insert fieldId value dict)
-                                        |> Show recordName id
+                                        |> Show recordName id focusedField
 
                                 UnsavedChanges dict ->
                                     UnsavedChanges (Dict.insert fieldId value dict)
-                                        |> Show recordName id
+                                        |> Show recordName id focusedField
 
                                 New dict ->
                                     New (Dict.insert fieldId value dict)
-                                        |> Show recordName id
+                                        |> Show recordName id focusedField
+
+                                _ ->
+                                    model.route
+
+                        _ ->
+                            model.route
+            in
+                ( { model | route = newRoute }, Cmd.none )
+
+        SetFocusedField newFocusedField ->
+            let
+                newRoute =
+                    case model.route of
+                        Show recordName id focusedField status ->
+                            case status of
+                                Saved dict ->
+                                    Show recordName id newFocusedField status
+
+                                UnsavedChanges dict ->
+                                    Show recordName id newFocusedField status
+
+                                New dict ->
+                                    Show recordName id newFocusedField status
 
                                 _ ->
                                     model.route

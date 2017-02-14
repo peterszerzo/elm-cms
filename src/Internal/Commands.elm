@@ -14,7 +14,7 @@ onRouteChange apiUrl route =
         List record routeData ->
             Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize record))
 
-        Show record id routeData ->
+        Show record id focusedField routeData ->
             Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize record) ++ "/" ++ id)
 
         _ ->

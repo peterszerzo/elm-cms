@@ -4,7 +4,7 @@ import Dict
 import Regex
 import Html exposing (Html, Attribute, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
 import Html.Attributes exposing (class, style, classList, href, value, for, id, type_, name, checked)
-import Html.Events exposing (onClick, onInput, onCheck, on)
+import Html.Events exposing (onClick, onInput, onCheck, onFocus, onBlur, on)
 import Json.Decode as JD
 import Internal.Messages exposing (Msg(..))
 import Internal.Routes exposing (..)
@@ -56,8 +56,8 @@ loader =
     p [] [ text "Loading entries..." ]
 
 
-editFormField : Models.Field -> String -> String -> Html Msg
-editFormField field recordName val =
+editFormField : Models.Field -> String -> Bool -> String -> Html Msg
+editFormField field recordName isFocused val =
     let
         ( isValid, errorMessage ) =
             field.validation
@@ -108,11 +108,17 @@ editFormField field recordName val =
                         [ id idName
                         , value val
                         , onInput (ChangeField field.id)
+                        , onFocus (SetFocusedField (Just field.id))
+                        , onBlur (SetFocusedField Nothing)
                         , style
                             (Styles.textInput
                                 ++ [ ( "border-color"
                                      , if isValid then
-                                        Styles.faintBlue
+                                        (if isFocused then
+                                            Styles.blue
+                                         else
+                                            Styles.faintBlue
+                                        )
                                        else
                                         Styles.red
                                      )
@@ -126,6 +132,8 @@ editFormField field recordName val =
                         [ id idName
                         , value val
                         , onInput (ChangeField field.id)
+                        , onFocus (SetFocusedField (Just field.id))
+                        , onBlur (SetFocusedField Nothing)
                         , style
                             (Styles.textInput
                                 ++ [ ( "border-color"
@@ -167,8 +175,8 @@ editFormField field recordName val =
             )
 
 
-editForm : Models.Records -> String -> Dict.Dict String String -> Html Msg
-editForm records recordName dict =
+editForm : Models.Records -> String -> Maybe String -> Dict.Dict String String -> Html Msg
+editForm records recordName focusedField dict =
     let
         fields =
             Dict.get recordName records
@@ -181,7 +189,7 @@ editForm records recordName dict =
                         val =
                             (Dict.get field.id dict |> Maybe.withDefault "")
                     in
-                        editFormField field recordName val
+                        editFormField field recordName (focusedField == Just field.id) val
                 )
                 fields
             )
@@ -242,7 +250,7 @@ content records model =
                     ]
                     dataView
 
-        Show recordName id showData ->
+        Show recordName id focusedField showData ->
             case showData of
                 LoadingShow ->
                     layout " "
@@ -253,7 +261,7 @@ content records model =
                     layout
                         "Edit"
                         [ p [] [ text "All saved :)." ] ]
-                        (editForm records recordName dict)
+                        (editForm records recordName focusedField dict)
 
                 UnsavedChanges dict ->
                     layout
@@ -272,6 +280,7 @@ content records model =
                         (editForm
                             records
                             recordName
+                            focusedField
                             dict
                         )
 
@@ -286,7 +295,7 @@ content records model =
                             ]
                             [ text "Save" ]
                         ]
-                        (editForm records recordName dict)
+                        (editForm records recordName focusedField dict)
 
                 _ ->
                     div [ style Styles.content ]
