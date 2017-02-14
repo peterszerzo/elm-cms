@@ -42,21 +42,8 @@ type alias Model =
 -- Records
 
 
-type alias Field =
-    { id : String
-    , type_ : Field.Type
-    , showInListView : Bool
-    , default : Maybe String
-    , validation :
-        Maybe
-            { regex : Regex.Regex
-            , errorMessage : String
-            }
-    }
-
-
 type alias Record =
-    List Field
+    List Field.Field
 
 
 type alias Records =

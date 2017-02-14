@@ -57,7 +57,7 @@ loader =
     p [] [ text "Loading, please wait..." ]
 
 
-editFormField : Models.Field -> String -> Bool -> String -> Html Msg
+editFormField : Field.Field -> String -> Bool -> String -> Html Msg
 editFormField field recordName isFocused val =
     let
         ( isValid, errorMessage ) =
