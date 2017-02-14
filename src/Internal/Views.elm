@@ -2,7 +2,7 @@ module Internal.Views exposing (..)
 
 import Dict
 import Regex
-import Html exposing (Html, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
+import Html exposing (Html, Attribute, header, text, div, img, h1, a, p, ul, li, form, label, input, button, textarea)
 import Html.Attributes exposing (class, style, classList, href, value, for, id, type_, name, checked)
 import Html.Events exposing (onClick, onInput, onCheck, on)
 import Json.Decode as JD
@@ -14,17 +14,16 @@ import Internal.Utilities as Utils
 import Internal.Styles as Styles
 
 
-link : ( String, String ) -> Html Msg
-link ( label, url ) =
+link : List (Attribute Msg) -> ( String, String ) -> Html Msg
+link attrs ( label, url ) =
     a [ href "javascript:void(0)", onClick (Navigate url) ] [ text label ]
 
 
 recordListItem : Models.Records -> String -> Dict.Dict String String -> Html Msg
 recordListItem records recordName rec =
-    li [ class "record" ]
+    li [ style Styles.record ]
         [ ul
-            [ class "record-fields"
-            ]
+            []
             (Dict.toList rec
                 |> List.filter
                     (\( id, _ ) ->
@@ -44,9 +43,10 @@ recordListItem records recordName rec =
                             [ text (key ++ ": " ++ value) ]
                     )
             )
-        , div [ class "record__nav" ]
-            [ link ( "Edit", "/" ++ (Utils.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
-            , a [ href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
+        , div [ style Styles.recordNav ]
+            [ link [ style Styles.recordNavLink ]
+                ( "Edit", "/" ++ (Utils.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
+            , a [ style Styles.recordNavLink, href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
             ]
         ]
 
@@ -56,91 +56,115 @@ loader =
     p [] [ text "Loading entries..." ]
 
 
-textInputAttrs : String -> String -> String -> Bool -> List (Html.Attribute Msg)
-textInputAttrs id_ idName val isValid =
-    [ id idName
-    , value val
-    , onInput (ChangeField id_)
-    , style
-        [ ( "border-color"
-          , if isValid then
-                ""
-            else
-                Styles.red
-          )
-        ]
-    ]
+editFormField : Models.Field -> String -> String -> Html Msg
+editFormField field recordName val =
+    let
+        ( isValid, errorMessage ) =
+            field.validation
+                |> Maybe.map
+                    (\validation ->
+                        ( Regex.contains validation.regex val, validation.errorMessage )
+                    )
+                |> Maybe.withDefault ( True, "" )
 
+        idName =
+            (recordName ++ "-" ++ field.id)
+    in
+        label [ for idName ]
+            ([ text ("Enter " ++ field.id)
+             , case field.type_ of
+                Field.List ->
+                    let
+                        chunks =
+                            String.split "||" val
+                    in
+                        div []
+                            (chunks
+                                |> List.indexedMap
+                                    (\index chunk ->
+                                        input
+                                            [ value chunk
+                                            , onInput
+                                                (\newChunk ->
+                                                    ChangeField field.id
+                                                        (chunks
+                                                            |> List.indexedMap
+                                                                (\index1 chunk ->
+                                                                    if index == index1 then
+                                                                        newChunk
+                                                                    else
+                                                                        chunk
+                                                                )
+                                                            |> String.join "||"
+                                                        )
+                                                )
+                                            ]
+                                            []
+                                    )
+                            )
 
-editFormField opts recordName val isValid errorMessage =
-    label [ for (recordName ++ "-" ++ opts.id) ]
-        ([ text ("Enter " ++ opts.id)
-         , case opts.type_ of
-            Field.List ->
-                let
-                    chunks =
-                        String.split "||" val
-                in
+                Field.Text ->
+                    input
+                        [ id idName
+                        , value val
+                        , onInput (ChangeField field.id)
+                        , style
+                            (Styles.textInput
+                                ++ [ ( "border-color"
+                                     , if isValid then
+                                        Styles.faintBlue
+                                       else
+                                        Styles.red
+                                     )
+                                   ]
+                            )
+                        ]
+                        []
+
+                Field.TextArea ->
+                    textarea
+                        [ id idName
+                        , value val
+                        , onInput (ChangeField field.id)
+                        , style
+                            (Styles.textInput
+                                ++ [ ( "border-color"
+                                     , if isValid then
+                                        Styles.faintBlue
+                                       else
+                                        Styles.red
+                                     )
+                                   ]
+                            )
+                        ]
+                        []
+
+                Field.Radio options ->
                     div []
-                        (chunks
-                            |> List.indexedMap
-                                (\index chunk ->
-                                    input
-                                        [ value chunk
-                                        , onInput
-                                            (\newChunk ->
-                                                ChangeField opts.id
-                                                    (chunks
-                                                        |> List.indexedMap
-                                                            (\index1 chunk ->
-                                                                if index == index1 then
-                                                                    newChunk
-                                                                else
-                                                                    chunk
-                                                            )
-                                                        |> String.join "||"
-                                                    )
-                                            )
+                        (List.map
+                            (\opt ->
+                                div []
+                                    [ input
+                                        [ type_ "radio"
+                                        , style Styles.radio
+                                        , name field.id
+                                        , checked (val == opt)
+                                        , onCheck (\isChecked -> ChangeField field.id opt)
                                         ]
                                         []
-                                )
-                        )
-
-            Field.Text ->
-                input
-                    (textInputAttrs opts.id (recordName ++ "-" ++ opts.id) val isValid)
-                    []
-
-            Field.TextArea ->
-                textarea
-                    (textInputAttrs opts.id (recordName ++ "-" ++ opts.id) val isValid)
-                    []
-
-            Field.Radio options ->
-                div []
-                    (List.map
-                        (\opt ->
-                            div []
-                                [ input
-                                    [ type_ "radio"
-                                    , name opts.id
-                                    , checked (val == opt)
-                                    , onCheck (\isChecked -> ChangeField opts.id opt)
+                                    , text opt
                                     ]
-                                    []
-                                , text opt
-                                ]
+                            )
+                            options
                         )
-                        options
-                    )
-         ]
-            ++ (if isValid then
-                    []
-                else
-                    [ p [ style [ ( "color", Styles.red ) ], class "validation-error" ] [ text errorMessage ]
-                    ]
-               )
-        )
+             ]
+                ++ (if isValid then
+                        []
+                    else
+                        [ p [ style Styles.validationError ] [ text errorMessage ]
+                        ]
+                   )
+            )
 
 
 editForm : Models.Records -> String -> Dict.Dict String String -> Html Msg
@@ -156,28 +180,29 @@ editForm records recordName dict =
                     let
                         val =
                             (Dict.get field.id dict |> Maybe.withDefault "")
-
-                        ( isValid, errorMessage ) =
-                            field.validation
-                                |> Maybe.map
-                                    (\validation ->
-                                        ( Regex.contains validation.regex val, validation.errorMessage )
-                                    )
-                                |> Maybe.withDefault ( True, "" )
                     in
-                        editFormField field recordName val isValid errorMessage
+                        editFormField field recordName val
                 )
                 fields
             )
+
+
+layout : String -> List (Html Msg) -> Html Msg -> Html Msg
+layout title statusChildren content =
+    div [ style Styles.content ]
+        [ h1 [] [ text title ]
+        , div [ style Styles.status ] statusChildren
+        , content
+        ]
 
 
 content : Models.Records -> Models.Model -> Html Msg
 content records model =
     case model.route of
         Home ->
-            div [ class "content" ]
-                [ h1 [] [ text ("Good day, " ++ model.user) ]
-                , div [ class "status" ]
+            layout ("Good day, " ++ model.user)
+                []
+                (div []
                     [ p [] [ text "Would you like to work on some..." ]
                     , ul []
                         (records
@@ -186,7 +211,7 @@ content records model =
                             |> List.map
                                 (\recordName ->
                                     li []
-                                        [ link
+                                        [ link []
                                             ( (Utils.pluralize recordName)
                                             , "/" ++ (Utils.pluralize recordName)
                                             )
@@ -194,7 +219,7 @@ content records model =
                                 )
                         )
                     ]
-                ]
+                )
 
         List recordName listData ->
             let
@@ -212,74 +237,69 @@ content records model =
                         _ ->
                             p [] [ text "Something is not implemented." ]
             in
-                div [ class "content" ]
-                    [ h1 [] [ text ("Listing " ++ recordName ++ "s") ]
-                    , div [ class "status" ] [ a [ href "javascript:void(0)", onClick (RequestNewRecordId recordName) ] [ text "Add new" ] ]
-                    , dataView
+                layout ("Listing " ++ recordName ++ "s")
+                    [ a [ href "javascript:void(0)", onClick (RequestNewRecordId recordName) ] [ text "Add new" ]
                     ]
+                    dataView
 
         Show recordName id showData ->
             case showData of
                 LoadingShow ->
-                    div [ class "content" ] [ loader ]
+                    layout " "
+                        []
+                        loader
 
                 Saved dict ->
-                    div [ class "content" ]
-                        [ h1 [] [ text "Edit" ]
-                        , div [ class "status" ]
-                            [ p [] [ text "All saved :)." ]
-                            ]
-                        , editForm records recordName dict
-                        ]
+                    layout
+                        "Edit"
+                        [ p [] [ text "All saved :)." ] ]
+                        (editForm records recordName dict)
 
                 UnsavedChanges dict ->
-                    div [ class "content" ]
-                        [ h1 [] [ text "Edit" ]
-                        , div [ class "status" ]
-                            [ p []
-                                [ text "You have unsaved changes."
-                                ]
-                            , if (Models.isRecordValid records recordName dict) then
-                                button
-                                    [ onClick RequestUpdate
-                                    ]
-                                    [ text "Save" ]
-                              else
-                                p [] [ text "Cannot save.. see validation errors below:" ]
+                    layout
+                        "Edit"
+                        [ p []
+                            [ text "You have unsaved changes."
                             ]
-                        , editForm records recordName dict
-                        ]
-
-                New dict ->
-                    div [ class "content" ]
-                        [ h1 [] [ text "New" ]
-                        , div [ class "status" ]
-                            [ p []
-                                [ text "This record has not yet been saved."
-                                ]
-                            , button
-                                [ onClick RequestSave
+                        , if (Models.isRecordValid records recordName dict) then
+                            button
+                                [ onClick RequestUpdate
                                 ]
                                 [ text "Save" ]
-                            ]
-                        , editForm records recordName dict
+                          else
+                            p [] [ text "Cannot save.. see validation errors below:" ]
                         ]
+                        (editForm
+                            records
+                            recordName
+                            dict
+                        )
+
+                New dict ->
+                    layout
+                        "New"
+                        [ p []
+                            [ text "This record has not yet been saved."
+                            ]
+                        , button
+                            [ onClick RequestSave
+                            ]
+                            [ text "Save" ]
+                        ]
+                        (editForm records recordName dict)
 
                 _ ->
-                    div [ class "content" ]
+                    div [ style Styles.content ]
                         [ h1 [] [ text "View not implemented" ]
                         ]
 
         NotFound error ->
-            div [ class "content" ]
-                [ h1 [] [ text "Not found" ]
-                , text ("Error: " ++ error)
-                ]
+            layout "Not found" [] (text ("Error: " ++ error))
 
 
 fileUpload : Maybe String -> Html Msg
 fileUpload maybeUrl =
-    div [ class "fileupload panel-skin" ]
+    div [ style Styles.fileUpload ]
         [ p []
             [ text
                 (case maybeUrl of
@@ -290,23 +310,26 @@ fileUpload maybeUrl =
                         "No file uploaded"
                 )
             ]
-        , input [ id "fileupload", type_ "file", on "change" (JD.succeed (UploadFile "fileupload")) ] []
-        , label [ for "fileupload" ] [ text "Upload file" ]
+        , input [ style Styles.visuallyHidden, id "fileupload", type_ "file", on "change" (JD.succeed (UploadFile "fileupload")) ] []
+        , label [ style Styles.fileUploadLabel, for "fileupload" ] [ text "Upload file" ]
         ]
 
 
 view : Models.Records -> Models.Model -> Html Msg
 view records model =
-    div [ class "container" ]
-        [ header [ class "header" ] [ link ( "elm-cms", "/" ) ]
+    div [ style Styles.container ]
+        [ header [ style Styles.header ] [ link [] ( "elm-cms", "/" ) ]
         , content records model
         , fileUpload model.uploadedFileUrl
         , div
-            [ classList
-                [ ( "flash", True )
-                , ( "panel-skin", True )
-                , ( "flash--visible", model.time - model.flash.createdAt < 8 )
-                ]
+            [ style
+                (Styles.flash
+                    ++ (if model.time - model.flash.createdAt < 8 then
+                            Styles.flashVisible
+                        else
+                            []
+                       )
+                )
             ]
             [ text model.flash.message ]
         ]
