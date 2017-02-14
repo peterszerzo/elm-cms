@@ -1,6 +1,16 @@
 module Internal.Styles exposing (..)
 
 
+black : String
+black =
+    "rgb(0, 0, 0)"
+
+
+white : String
+white =
+    "rgb(255, 255, 255)"
+
+
 blue : String
 blue =
     "rgb(51, 54, 255)"
@@ -186,7 +196,7 @@ radio =
 markdownContainer : List ( String, String )
 markdownContainer =
     [ ( "display", "flex" )
-    , ( "background", "#FFF" )
+    , ( "background", white )
     , ( "padding", "20px" )
     , ( "border-width", "1px" )
     , ( "border-style", "solid" )
@@ -199,8 +209,18 @@ markdownContainer =
 markdownContainerExpanded : List ( String, String )
 markdownContainerExpanded =
     [ ( "position", "fixed" )
-    , ( "top", "10px" )
-    , ( "left", "10px" )
-    , ( "right", "10px" )
-    , ( "bottom", "10px" )
+    , ( "top", "0" )
+    , ( "left", "0" )
+    , ( "right", "0" )
+    , ( "bottom", "0" )
+    ]
+
+
+close : List ( String, String )
+close =
+    [ ( "position", "absolute" )
+    , ( "top", "20px" )
+    , ( "right", "20px" )
+    , ( "color", black )
+    , ( "padding", "10px" )
     ]
