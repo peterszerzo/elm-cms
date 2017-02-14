@@ -14,4 +14,3 @@ type Type
     = Text
     | TextArea
     | Radio (List String)
-    | List

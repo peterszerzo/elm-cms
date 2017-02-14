@@ -73,36 +73,6 @@ editFormField field recordName isFocused val =
         label [ for idName ]
             ([ text ("Enter " ++ field.id)
              , case field.type_ of
-                Field.List ->
-                    let
-                        chunks =
-                            String.split "||" val
-                    in
-                        div []
-                            (chunks
-                                |> List.indexedMap
-                                    (\index chunk ->
-                                        input
-                                            [ value chunk
-                                            , onInput
-                                                (\newChunk ->
-                                                    ChangeField field.id
-                                                        (chunks
-                                                            |> List.indexedMap
-                                                                (\index1 chunk ->
-                                                                    if index == index1 then
-                                                                        newChunk
-                                                                    else
-                                                                        chunk
-                                                                )
-                                                            |> String.join "||"
-                                                        )
-                                                )
-                                            ]
-                                            []
-                                    )
-                            )
-
                 Field.Text ->
                     input
                         [ id idName
