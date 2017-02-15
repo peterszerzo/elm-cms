@@ -2,7 +2,7 @@ module Cms exposing (..)
 
 {-| This library creates a CMS based on a set of records, assuming a REST backend.
 
-@docs program
+@docs programWithFlags
 @docs Record
 @docs Model
 @docs Flags
@@ -54,10 +54,10 @@ type alias Msg =
 
 {-| Creates a program
 
-    program []
+    programWithFlags []
 -}
-program : List ( String, Record ) -> Program Models.Flags Models.Model Messages.Msg
-program recs =
+programWithFlags : List ( String, Record ) -> Program Models.Flags Models.Model Messages.Msg
+programWithFlags recs =
     let
         records =
             Dict.fromList recs

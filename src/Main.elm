@@ -1,9 +1,9 @@
 module Main exposing (..)
 
-import Cms exposing (program, Model, Flags, Msg)
+import Cms exposing (programWithFlags, Model, Flags, Msg)
 import ExampleRecords exposing (records)
 
 
 main : Program Flags Model Msg
 main =
-    program records
+    programWithFlags records
