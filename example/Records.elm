@@ -1,4 +1,4 @@
-module ExampleRecords exposing (..)
+module Records exposing (..)
 
 import Regex
 import Cms exposing (Record)

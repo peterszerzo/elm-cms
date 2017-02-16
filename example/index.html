@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>elm-cms</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+      *{-webkit-font-smoothing: antialiased;box-sizing: border-box;font-family: monospace;}
+      html,body{width: 100%;height: 100%;margin: 0;text-align: center;}
+      h1 {margin: 40px 0;}
+      a {color: rgb(51, 54, 255);}
+      ul {list-style-type: none;margin: 0;padding: 0;}
+      textarea {min-height: 200px;}
+      input:focus,textarea:focus{outline: 0;border-color: rgb(51, 54, 255);}
+      label{text-align: left;display: block;margin-top: 30px;}
+      label:first-of-type{margin-top: 0;}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="elm.js"></script>
+    <script>
+      var API_URL = 'http://localhost:3001/';
+
+      var app = Elm.Main.embed(document.getElementById('root'), {
+        user: 'Alfred',
+        apiUrl: API_URL
+      });
+
+      // Handle file uploads
+      // Callback is called every time the file input field changes.
+      // When image is uploaded, ship its url back to the fileUploaded port.
+      app.ports.uploadFile.subscribe(function(id) {
+        var node = document.getElementById(id);
+        var file = node.files[0];
+        if (!file) {
+          return;
+        }
+        setTimeout(function() {
+          app.ports.fileUploaded.send('http://images.com/1234.png');
+        }, 1000);
+        var reader = new global.FileReader();
+        reader.onload = function(res) {
+          console.log(reader.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    </script>
+  </body>
+</html>
