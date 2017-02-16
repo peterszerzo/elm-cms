@@ -12,28 +12,69 @@ A reliable content management dashboard that does and will subbornly resist over
 
 ## Wait what?
 
-Right, code examples are better..
+Right, code examples are better. Here's how you run the one in `./example` (it's a todo list alright, but this time, you don't have to make it!):
+
+* install elm-live: `npm i -g elm-live`
+* then watch: `elm-live ./example/Main.elm --dir=./example --output example/elm.js --open --pushstate`
+* oh, right, your server, forgot about the server.. For starters, you can test with a `json-server` by installing it globally (`npm i -g json-server`), and run `json-server ./example/db.json --port 3001` (it'll grow nice and chubby as you add content). Now refresh your elm-live server and you're good to go.
+
+### How works it?
+
+Your client Elm program is as little as the following:
 
 ```elm
 module Main exposing (..)
 
 import Cms exposing (programWithFlags, Model, Flags, Msg)
-import Cms.Field exposing (Field, Type)
+import Cms.Field exposing (Field, Type(..))
 
-fields = []
 
+todoFields : List Field
+todoFields =
+    [ { id = "task"
+      , type_ = Text
+      , showInListView = False
+      , default = Nothing
+      , validation = Nothing
+      }
+    , { id = "completed"
+      , type_ = Radio [ "yes", "no" ]
+      , showInListView = False
+      , default = Just "no"
+      , validation = Nothing
+      }
+    ]
+
+
+main : Program Flags Model Msg
 main =
     programWithFlags
-        [ ("todo", fields)
+        [ ( "todo", todoFields )
         ]
 ```
 
-```js
+Notice how you didn't need to pass views, updates or inits. That's because `Cms.programWithFlags` already wraps `Navigation.programWithFlags`, and comes with views and updates of its own.
 
+On the markup side, things are not any more complicated:
+
+```html
+<div id="root"></div>
+<script>
+  var app = Elm.Main.embed(document.getElementById('root'), {
+    user: 'Alfred',
+    apiUrl: 'http://localhost:3001'
+  });
+</script>
 ```
 
-## Run the example
+## The extras
 
-Install elm-live: `npm i -g elm-live`
+### Images
 
-Then watch: `elm-live ./example/Main.elm --dir=./example --output example/elm.js --open --pushstate`
+You can upload images using the bottom-left widget - but you need to handle the heavy-lifting yourself. Here's how it works:
+
+* when an image is uploaded, Elm sends a message to the `uploadFile` port with the id of the input element.
+* in JavaScript, you can read the file, send it to a server, and get a hold of the URL it landed on.
+* simply pass back this URL to the `fileUploaded` port, so the program can display it in the widget.
+
+This is super useful if the markdown you're editing contains images. You can simply copy the URL that comes back and add it in a markdown image tag, like so: `![](i-got-this-from-js.jpg)`.

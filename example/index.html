@@ -20,11 +20,9 @@
     <div id="root"></div>
     <script src="/elm.js"></script>
     <script>
-      var API_URL = 'http://localhost:3001/';
-
       var app = Elm.Main.embed(document.getElementById('root'), {
         user: 'Alfred',
-        apiUrl: API_URL
+        apiUrl: 'http://localhost:3001/'
       });
 
       // Handle file uploads
