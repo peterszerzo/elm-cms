@@ -36,4 +36,4 @@ main =
 
 Install elm-live: `npm i -g elm-live`
 
-Then watch: `elm-live ./example/Main.elm --dir=./example --open --pushstate`
+Then watch: `elm-live ./example/Main.elm --dir=./example --output example/elm.js --open --pushstate`
