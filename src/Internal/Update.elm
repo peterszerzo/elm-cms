@@ -48,53 +48,59 @@ update records msg model =
 
                 Nothing ->
                     case model.route of
-                        List record LoadingList ->
-                            let
-                                data =
-                                    resString
-                                        |> JD.decodeString decodeRecords
-                                        |> (\res ->
-                                                case res of
-                                                    Ok dicts ->
-                                                        Loaded dicts
+                        List { recordName, status } ->
+                            case status of
+                                LoadingList ->
+                                    let
+                                        status =
+                                            resString
+                                                |> JD.decodeString decodeRecords
+                                                |> (\res ->
+                                                        case res of
+                                                            Ok dicts ->
+                                                                Loaded dicts
 
-                                                    Err err ->
-                                                        ListError ("Could not decode: " ++ resString)
-                                           )
-                            in
-                                ( { model | route = List record data }, Cmd.none )
+                                                            Err err ->
+                                                                ListError ("Could not decode: " ++ resString)
+                                                   )
+                                    in
+                                        ( { model | route = List { recordName = recordName, status = status } }, Cmd.none )
 
-                        Show recordName id focusedField LoadingShow ->
-                            let
-                                status =
-                                    resString
-                                        |> JD.decodeString decodeRecord
-                                        |> (\res ->
-                                                case res of
-                                                    Ok dict ->
-                                                        Saved dict
+                                _ ->
+                                    ( model, Cmd.none )
 
-                                                    Err err ->
-                                                        ShowError ("Could not decode: " ++ resString)
-                                           )
-                            in
-                                ( { model | route = Show recordName id focusedField status }, Cmd.none )
+                        Show { recordName, recordId, focusedField, status } ->
+                            case status of
+                                LoadingShow ->
+                                    let
+                                        status =
+                                            resString
+                                                |> JD.decodeString decodeRecord
+                                                |> (\res ->
+                                                        case res of
+                                                            Ok dict ->
+                                                                Saved dict
 
-                        Show recordName id focusedField status ->
-                            let
-                                ( newStatus, newFlash ) =
-                                    case status of
-                                        Saving dict ->
-                                            ( Saved dict
-                                            , { message = recordName ++ " successfully saved, id = " ++ id
-                                              , createdAt = model.time
-                                              }
-                                            )
+                                                            Err err ->
+                                                                ShowError ("Could not decode: " ++ resString)
+                                                   )
+                                    in
+                                        ( { model | route = Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = status } }, Cmd.none )
 
-                                        _ ->
-                                            ( status, model.flash )
-                            in
-                                ( { model | route = Show recordName id focusedField newStatus, flash = newFlash }, Cmd.none )
+                                Saving dict ->
+                                    let
+                                        status =
+                                            Saved dict
+
+                                        flash =
+                                            { message = recordName ++ " successfully saved, id = " ++ recordId
+                                            , createdAt = model.time
+                                            }
+                                    in
+                                        ( { model | route = Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = status }, flash = flash }, Cmd.none )
+
+                                _ ->
+                                    ( model, Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -102,8 +108,23 @@ update records msg model =
         ReceiveHttp (Err err) ->
             case model.route of
                 -- When the app navigates to the edit link of a not-yet-created record, we expect a 404
-                Show recordName id focusedField LoadingShow ->
-                    ( { model | route = Show recordName id focusedField (createRecord records recordName id |> New) }, Cmd.none )
+                Show { recordName, recordId, focusedField, status } ->
+                    case status of
+                        LoadingShow ->
+                            ( { model
+                                | route =
+                                    Show
+                                        { recordName = recordName
+                                        , recordId = recordId
+                                        , focusedField = focusedField
+                                        , status = createRecord records recordName recordId |> New
+                                        }
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( { model
@@ -138,16 +159,36 @@ update records msg model =
 
         RequestSave ->
             case model.route of
-                Show recordName id focusedField (New dict) ->
-                    ( { model | route = Show recordName id focusedField (Saving dict) }, Commands.createRequest model.apiUrl recordName id dict )
+                Show { recordName, recordId, focusedField, status } ->
+                    case status of
+                        New dict ->
+                            ( { model | route = Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = Saving dict } }, Commands.createRequest model.apiUrl recordName recordId dict )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
 
         RequestUpdate ->
             case model.route of
-                Show recordName id focusedField (UnsavedChanges dict) ->
-                    ( { model | route = Show recordName id focusedField (Saving dict) }, Commands.updateRequest model.apiUrl recordName id dict )
+                Show { recordName, recordId, focusedField, status } ->
+                    case status of
+                        UnsavedChanges dict ->
+                            ( { model
+                                | route =
+                                    Show
+                                        { recordName = recordName
+                                        , recordId = recordId
+                                        , focusedField = focusedField
+                                        , status = Saving dict
+                                        }
+                              }
+                            , Commands.updateRequest model.apiUrl recordName recordId dict
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -156,13 +197,20 @@ update records msg model =
             let
                 newRoute =
                     case model.route of
-                        List recordName (Loaded dicts) ->
-                            List recordName
-                                (Loaded
-                                    (dicts
-                                        |> List.filter (\dict -> Dict.get "id" dict /= Just id)
-                                    )
-                                )
+                        List { recordName, status } ->
+                            case status of
+                                Loaded dicts ->
+                                    List
+                                        { recordName = recordName
+                                        , status =
+                                            Loaded
+                                                (dicts
+                                                    |> List.filter (\dict -> Dict.get "id" dict /= Just id)
+                                                )
+                                        }
+
+                                _ ->
+                                    model.route
 
                         _ ->
                             model.route
@@ -182,22 +230,23 @@ update records msg model =
             let
                 newRoute =
                     case model.route of
-                        Show recordName id focusedField status ->
-                            case status of
-                                Saved dict ->
-                                    UnsavedChanges (Dict.insert fieldId value dict)
-                                        |> Show recordName id focusedField
+                        Show { recordName, recordId, focusedField, status } ->
+                            let
+                                newStatus =
+                                    case status of
+                                        Saved dict ->
+                                            UnsavedChanges (Dict.insert fieldId value dict)
 
-                                UnsavedChanges dict ->
-                                    UnsavedChanges (Dict.insert fieldId value dict)
-                                        |> Show recordName id focusedField
+                                        UnsavedChanges dict ->
+                                            UnsavedChanges (Dict.insert fieldId value dict)
 
-                                New dict ->
-                                    New (Dict.insert fieldId value dict)
-                                        |> Show recordName id focusedField
+                                        New dict ->
+                                            New (Dict.insert fieldId value dict)
 
-                                _ ->
-                                    model.route
+                                        _ ->
+                                            status
+                            in
+                                Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = newStatus }
 
                         _ ->
                             model.route
@@ -208,16 +257,16 @@ update records msg model =
             let
                 newRoute =
                     case model.route of
-                        Show recordName id focusedField status ->
+                        Show { recordName, recordId, focusedField, status } ->
                             case status of
                                 Saved dict ->
-                                    Show recordName id newFocusedField status
+                                    Show { recordName = recordName, recordId = recordId, focusedField = newFocusedField, status = status }
 
                                 UnsavedChanges dict ->
-                                    Show recordName id newFocusedField status
+                                    Show { recordName = recordName, recordId = recordId, focusedField = newFocusedField, status = status }
 
                                 New dict ->
-                                    Show recordName id newFocusedField status
+                                    Show { recordName = recordName, recordId = recordId, focusedField = newFocusedField, status = status }
 
                                 _ ->
                                     model.route

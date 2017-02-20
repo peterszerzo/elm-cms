@@ -11,11 +11,11 @@ import Internal.Utilities as Utils
 onRouteChange : String -> Route -> Cmd Msg
 onRouteChange apiUrl route =
     case route of
-        List record routeData ->
-            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize record))
+        List { recordName } ->
+            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize recordName))
 
-        Show record id focusedField routeData ->
-            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize record) ++ "/" ++ id)
+        Show { recordName, recordId } ->
+            Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize recordName) ++ "/" ++ recordId)
 
         _ ->
             Cmd.none

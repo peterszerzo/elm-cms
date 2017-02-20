@@ -13,7 +13,7 @@ todoFields =
       , validation = Nothing
       }
     , { id = "completed"
-      , type_ = Radio [ "yes", "no" ]
+      , type_ = Radio [ "yes", "no", "maybe" ]
       , showInListView = True
       , default = Just "no"
       , validation = Nothing

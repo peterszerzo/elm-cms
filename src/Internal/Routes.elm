@@ -21,8 +21,8 @@ type ShowStatus
 
 type Route
     = Home
-    | List String ListStatus
-    | Show String String (Maybe String) ShowStatus
+    | List { recordName : String, status : ListStatus }
+    | Show { recordName : String, recordId : String, focusedField : Maybe String, status : ShowStatus }
     | NotFound String
 
 
@@ -39,10 +39,10 @@ parseFrags frags =
     in
         case id of
             Just id_ ->
-                Show recordName id_ Nothing LoadingShow
+                Show { recordName = recordName, recordId = id_, focusedField = Nothing, status = LoadingShow }
 
             Nothing ->
-                List recordName LoadingList
+                List { recordName = recordName, status = LoadingList }
 
 
 parse : Navigation.Location -> Route

@@ -261,10 +261,10 @@ content records model =
                     ]
                 )
 
-        List recordName listData ->
+        List { recordName, status } ->
             let
                 dataView =
-                    case listData of
+                    case status of
                         LoadingList ->
                             loader
 
@@ -282,8 +282,8 @@ content records model =
                     ]
                     dataView
 
-        Show recordName id focusedField showData ->
-            case showData of
+        Show { recordName, recordId, focusedField, status } ->
+            case status of
                 LoadingShow ->
                     layout " "
                         []
