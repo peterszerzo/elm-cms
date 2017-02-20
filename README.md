@@ -14,9 +14,9 @@ A reliable content management dashboard that does and will subbornly resist over
 
 Right, code examples are better. Here's how you run the one in `./example` (it's a todo list alright, but this time, you don't have to make it!):
 
-* install elm-live: `npm i -g elm-live`
-* then watch: `elm-live ./example/Main.elm --dir=./example --output example/elm.js --open --pushstate`
-* oh, right, your server, forgot about the server.. For starters, you can test with a `json-server` by installing it globally (`npm i -g json-server`), and run `json-server ./example/db.json --port 3001` (it'll grow nice and chubby as you add content). Now refresh your elm-live server and you're good to go.
+* install some nice things: `npm i -g elm-live json-server`
+* start a simple JSON file-based REST server: `json-server ./example/db.json --port 3001` (watch that file grow nice and chubby as you create records)
+* run the Elm app: `elm-live ./example/Main.elm --dir=./example --output example/elm.js --open --pushstate`
 
 ### How works it?
 

@@ -18,6 +18,12 @@ todoFields =
       , default = Just "no"
       , validation = Nothing
       }
+    , { id = "content"
+      , type_ = Markdown
+      , showInListView = False
+      , default = Nothing
+      , validation = Nothing
+      }
     ]
 
 

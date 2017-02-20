@@ -1,7 +1,8 @@
 module Internal.Update exposing (update)
 
 import Dict
-import Random
+import Random.Pcg exposing (generate)
+import Uuid.Barebones exposing (uuidStringGenerator)
 import Navigation
 import Json.Decode as JD
 import Internal.Models as Models exposing (Model, Records, createRecord)
@@ -112,7 +113,7 @@ update records msg model =
                     )
 
         RequestNewRecordId recordName ->
-            ( { model | awaiting = Just { operation = Models.ReceivingNewRecordId recordName, requestedAt = model.time } }, Random.int 0 100 |> Random.map toString |> Random.generate ReceiveNewRecordId )
+            ( { model | awaiting = Just { operation = Models.ReceivingNewRecordId recordName, requestedAt = model.time } }, uuidStringGenerator |> generate ReceiveNewRecordId )
 
         ReceiveNewRecordId id ->
             ( { model | awaiting = Nothing }
