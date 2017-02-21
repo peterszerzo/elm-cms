@@ -10,6 +10,10 @@ type ListStatus
     | ListError String
 
 
+type alias ListModel =
+    { recordName : String, status : ListStatus }
+
+
 type ShowStatus
     = LoadingShow
     | New (Dict.Dict String String)
@@ -19,10 +23,18 @@ type ShowStatus
     | ShowError String
 
 
+type alias ShowModel =
+    { recordName : String
+    , recordId : String
+    , focusedField : Maybe String
+    , status : ShowStatus
+    }
+
+
 type Route
     = Home
-    | List { recordName : String, status : ListStatus }
-    | Show { recordName : String, recordId : String, focusedField : Maybe String, status : ShowStatus }
+    | List ListModel
+    | Show ShowModel
     | NotFound String
 
 

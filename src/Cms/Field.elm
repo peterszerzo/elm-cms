@@ -3,10 +3,18 @@ module Cms.Field exposing (..)
 {-| This module contains the types describing record fields. For example, your next static page will have a `metaDescription` field, which is unique, at least 15 characters long, should show in the list view (unlike that long static content field), and should be entered in a single-line text input. Looking for a markdown field with live preview, and the library has you covered.
 
 # Definitions
-@docs Field, Type
+@docs Field, Type, ValidationType
 -}
 
 import Regex
+
+
+{-| Describes a validation type.
+-}
+type ValidationType
+    = AnyValue
+    | FieldRegex Regex.Regex
+    | Custom String
 
 
 {-| Describes a field, including display options, default values, validations, etc.
@@ -18,7 +26,7 @@ type alias Field =
     , default : Maybe String
     , validation :
         Maybe
-            { regex : Regex.Regex
+            { type_ : ValidationType
             , errorMessage : String
             }
     }

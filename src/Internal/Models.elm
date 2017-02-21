@@ -88,7 +88,18 @@ isRecordValid records recordName dict =
                             (Maybe.map2
                                 (\val regex -> Regex.contains regex val)
                                 (Dict.get field.id dict)
-                                (field.validation |> Maybe.map .regex)
+                                (case field.validation of
+                                    Just validation ->
+                                        case validation.type_ of
+                                            Field.FieldRegex regex ->
+                                                Just regex
+
+                                            _ ->
+                                                Nothing
+
+                                    Nothing ->
+                                        Nothing
+                                )
                             )
                                 |> Maybe.withDefault True
                         )

@@ -18,11 +18,28 @@
   </head>
   <body>
     <div id="root"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.8.1/js-yaml.min.js"></script>
     <script src="/elm.js"></script>
     <script>
       var app = Elm.Main.embed(document.getElementById('root'), {
         user: 'Johnny',
         apiUrl: 'http://localhost:3001/'
+      })
+
+      app.ports.validateField.subscribe(function (data) {
+        var obj = JSON.parse(data)
+        var name = obj.name
+        var value = obj.value
+        var valid
+        try {
+          valid = JSON.stringify(jsyaml.load(value))
+        } catch(err) {
+          valid = null
+        }
+        app.ports.fieldValidated.send(JSON.stringify({
+          name: name,
+          valid: valid
+        }))
       })
 
       // Handle file uploads

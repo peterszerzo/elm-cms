@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Cms exposing (programWithFlags, Model, Flags, Msg)
-import Cms.Field exposing (Field, Type(..))
+import Cms.Field exposing (Field, Type(..), ValidationType(..))
 
 
 todoFields : List Field
@@ -23,6 +23,12 @@ todoFields =
       , showInListView = False
       , default = Nothing
       , validation = Nothing
+      }
+    , { id = "content2"
+      , type_ = TextArea
+      , showInListView = False
+      , default = Nothing
+      , validation = Just { type_ = Custom "yaml", errorMessage = "" }
       }
     ]
 

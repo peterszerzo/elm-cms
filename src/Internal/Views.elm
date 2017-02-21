@@ -7,7 +7,7 @@ import Html.Attributes exposing (class, style, classList, href, value, for, id, 
 import Html.Events exposing (onClick, onInput, onCheck, onFocus, onBlur, on)
 import Json.Decode as JD
 import Markdown
-import Internal.Messages exposing (Msg(..))
+import Internal.Messages exposing (ShowMsg(..), Msg(..))
 import Internal.Routes exposing (..)
 import Internal.Models as Models
 import Cms.Field as Field
@@ -64,7 +64,12 @@ editFormField field recordName isFocused val =
             field.validation
                 |> Maybe.map
                     (\validation ->
-                        ( Regex.contains validation.regex val, validation.errorMessage )
+                        case validation.type_ of
+                            Field.FieldRegex regex ->
+                                ( Regex.contains regex val, validation.errorMessage )
+
+                            _ ->
+                                ( True, "" )
                     )
                 |> Maybe.withDefault ( True, "" )
 
@@ -99,28 +104,61 @@ editFormField field recordName isFocused val =
                         []
 
                 Field.TextArea ->
-                    textarea
-                        [ id idName
-                        , value val
-                        , onInput (ChangeField field.id)
-                        , onFocus (SetFocusedField (Just field.id))
-                        , onBlur (SetFocusedField Nothing)
-                        , style
-                            (Styles.textInput
-                                ++ [ ( "border-color"
-                                     , if isValid then
-                                        (if isFocused then
-                                            Styles.blue
-                                         else
-                                            Styles.faintBlue
-                                        )
-                                       else
-                                        Styles.red
-                                     )
-                                   ]
+                    div
+                        [ style
+                            (Styles.markdownContainer
+                                ++ (if isFocused then
+                                        Styles.markdownContainerExpanded
+                                    else
+                                        []
+                                   )
                             )
                         ]
-                        []
+                        (if isFocused then
+                            [ textarea
+                                [ id idName
+                                , value val
+                                , onInput (ChangeField field.id)
+                                , style
+                                    (Styles.textInput
+                                        ++ [ ( "border-color"
+                                             , if isValid then
+                                                (if isFocused then
+                                                    Styles.blue
+                                                 else
+                                                    Styles.faintBlue
+                                                )
+                                               else
+                                                Styles.red
+                                             )
+                                           ]
+                                        ++ (if isFocused then
+                                                [ ( "width", "50%" ) ]
+                                            else
+                                                []
+                                           )
+                                    )
+                                ]
+                                []
+                            , div [ style Styles.markdownRendered ] [ text val ]
+                            , div
+                                [ style Styles.close
+                                , onClick (SetFocusedField Nothing)
+                                ]
+                                [ text "✕" ]
+                            ]
+                         else
+                            [ div [ style Styles.markdownPreview, onClick (SetFocusedField (Just field.id)) ]
+                                [ p [ style Styles.remark ] [ text "This is a preview. Click to expand editor." ]
+                                , text
+                                    (if val == "" then
+                                        "Content is empty."
+                                     else
+                                        val
+                                    )
+                                ]
+                            ]
+                        )
 
                 Field.Markdown ->
                     div
@@ -205,6 +243,7 @@ editFormField field recordName isFocused val =
                         ]
                    )
             )
+            |> Html.map ShowMsgContainer
 
 
 editForm : Models.Records -> String -> Maybe String -> Dict.Dict String String -> Html Msg
@@ -303,9 +342,10 @@ content records model =
                             ]
                         , if (Models.isRecordValid records recordName dict) then
                             button
-                                [ onClick RequestUpdate
+                                [ onClick RequestSave
                                 ]
                                 [ text "Save" ]
+                                |> Html.map ShowMsgContainer
                           else
                             p [] [ text "Cannot save.. see validation errors below:" ]
                         ]
@@ -326,6 +366,7 @@ content records model =
                             [ onClick RequestSave
                             ]
                             [ text "Save" ]
+                            |> Html.map ShowMsgContainer
                         ]
                         (editForm records recordName focusedField dict)
 

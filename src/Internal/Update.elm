@@ -5,11 +5,13 @@ import Random.Pcg exposing (generate)
 import Uuid.Barebones exposing (uuidStringGenerator)
 import Navigation
 import Json.Decode as JD
+import Json.Encode as JE
 import Internal.Models as Models exposing (Model, Records, createRecord)
-import Internal.Messages exposing (Msg(..))
+import Internal.Messages exposing (ShowMsg(..), Msg(..))
 import Internal.Commands as Commands
 import Internal.Routes exposing (..)
 import Internal.Ports as Ports
+import Cms.Field as Field
 
 
 decodeRecord : JD.Decoder (Dict.Dict String String)
@@ -20,6 +22,73 @@ decodeRecord =
 decodeRecords : JD.Decoder (List (Dict.Dict String String))
 decodeRecords =
     JD.list decodeRecord
+
+
+updateShow : Records -> String -> ShowMsg -> ShowModel -> ( ShowModel, Cmd Msg )
+updateShow records apiUrl showMsg showModel =
+    case showMsg of
+        ChangeField fieldId value ->
+            let
+                cmd =
+                    Dict.get showModel.recordName records
+                        |> Maybe.map (List.filter (\field -> field.id == fieldId))
+                        |> Maybe.andThen List.head
+                        |> Maybe.andThen .validation
+                        |> Maybe.andThen
+                            (\val ->
+                                case val.type_ of
+                                    Field.Custom validationName ->
+                                        Ports.validateField ("{\"name\":" ++ (JE.encode 0 (JE.string validationName)) ++ ",\"value\":" ++ (JE.encode 0 (JE.string value)) ++ "}") |> Just
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> Maybe.withDefault Cmd.none
+
+                newStatus =
+                    case showModel.status of
+                        Saved dict ->
+                            UnsavedChanges (Dict.insert fieldId value dict)
+
+                        UnsavedChanges dict ->
+                            UnsavedChanges (Dict.insert fieldId value dict)
+
+                        New dict ->
+                            New (Dict.insert fieldId value dict)
+
+                        _ ->
+                            showModel.status
+            in
+                ( { showModel | status = newStatus }, cmd )
+
+        SetFocusedField focusedField ->
+            ( { showModel | focusedField = focusedField }, Cmd.none )
+
+        RequestSave ->
+            case showModel.status of
+                New dict ->
+                    ( { showModel | status = Saving dict }
+                    , Commands.createRequest apiUrl showModel.recordName showModel.recordId dict
+                    )
+
+                UnsavedChanges dict ->
+                    ( { showModel | status = Saving dict }
+                    , Commands.updateRequest apiUrl showModel.recordName showModel.recordId dict
+                    )
+
+                _ ->
+                    ( showModel, Cmd.none )
+
+        FieldValidated val ->
+            let
+                _ =
+                    val
+                        |> Debug.log "val"
+            in
+                ( showModel, Cmd.none )
+
+        _ ->
+            ( showModel, Cmd.none )
 
 
 update : Records -> Msg -> Model -> ( Model, Cmd Msg )
@@ -85,7 +154,17 @@ update records msg model =
                                                                 ShowError ("Could not decode: " ++ resString)
                                                    )
                                     in
-                                        ( { model | route = Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = status } }, Cmd.none )
+                                        ( { model
+                                            | route =
+                                                Show
+                                                    { recordName = recordName
+                                                    , recordId = recordId
+                                                    , focusedField = focusedField
+                                                    , status = status
+                                                    }
+                                          }
+                                        , Cmd.none
+                                        )
 
                                 Saving dict ->
                                     let
@@ -134,7 +213,9 @@ update records msg model =
                     )
 
         RequestNewRecordId recordName ->
-            ( { model | awaiting = Just { operation = Models.ReceivingNewRecordId recordName, requestedAt = model.time } }, uuidStringGenerator |> generate ReceiveNewRecordId )
+            ( { model | awaiting = Just { operation = Models.ReceivingNewRecordId recordName, requestedAt = model.time } }
+            , uuidStringGenerator |> generate ReceiveNewRecordId
+            )
 
         ReceiveNewRecordId id ->
             ( { model | awaiting = Nothing }
@@ -157,38 +238,14 @@ update records msg model =
                 )
             )
 
-        RequestSave ->
+        ShowMsgContainer showMsg ->
             case model.route of
-                Show { recordName, recordId, focusedField, status } ->
-                    case status of
-                        New dict ->
-                            ( { model | route = Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = Saving dict } }, Commands.createRequest model.apiUrl recordName recordId dict )
-
-                        _ ->
-                            ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        RequestUpdate ->
-            case model.route of
-                Show { recordName, recordId, focusedField, status } ->
-                    case status of
-                        UnsavedChanges dict ->
-                            ( { model
-                                | route =
-                                    Show
-                                        { recordName = recordName
-                                        , recordId = recordId
-                                        , focusedField = focusedField
-                                        , status = Saving dict
-                                        }
-                              }
-                            , Commands.updateRequest model.apiUrl recordName recordId dict
-                            )
-
-                        _ ->
-                            ( model, Cmd.none )
+                Show showModel ->
+                    let
+                        ( newShowModel, cmd ) =
+                            updateShow records model.apiUrl showMsg showModel
+                    in
+                        ( { model | route = Show newShowModel }, cmd )
 
                 _ ->
                     ( model, Cmd.none )
@@ -225,56 +282,6 @@ update records msg model =
                   }
                 , Commands.deleteRequest model.apiUrl recordName id
                 )
-
-        ChangeField fieldId value ->
-            let
-                newRoute =
-                    case model.route of
-                        Show { recordName, recordId, focusedField, status } ->
-                            let
-                                newStatus =
-                                    case status of
-                                        Saved dict ->
-                                            UnsavedChanges (Dict.insert fieldId value dict)
-
-                                        UnsavedChanges dict ->
-                                            UnsavedChanges (Dict.insert fieldId value dict)
-
-                                        New dict ->
-                                            New (Dict.insert fieldId value dict)
-
-                                        _ ->
-                                            status
-                            in
-                                Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = newStatus }
-
-                        _ ->
-                            model.route
-            in
-                ( { model | route = newRoute }, Cmd.none )
-
-        SetFocusedField newFocusedField ->
-            let
-                newRoute =
-                    case model.route of
-                        Show { recordName, recordId, focusedField, status } ->
-                            case status of
-                                Saved dict ->
-                                    Show { recordName = recordName, recordId = recordId, focusedField = newFocusedField, status = status }
-
-                                UnsavedChanges dict ->
-                                    Show { recordName = recordName, recordId = recordId, focusedField = newFocusedField, status = status }
-
-                                New dict ->
-                                    Show { recordName = recordName, recordId = recordId, focusedField = newFocusedField, status = status }
-
-                                _ ->
-                                    model.route
-
-                        _ ->
-                            model.route
-            in
-                ( { model | route = newRoute }, Cmd.none )
 
         UploadFile fileInputFieldId ->
             ( model, Ports.uploadFile fileInputFieldId )
