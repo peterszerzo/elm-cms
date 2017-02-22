@@ -1,15 +1,3 @@
 {
-  "todos": [
-    {
-      "completed": "maybe",
-      "id": "88",
-      "task": "Take milk",
-      "content": "# Indeed"
-    },
-    {
-      "completed": "no",
-      "id": "45",
-      "task": "Indeed"
-    }
-  ]
+  "todos": []
 }

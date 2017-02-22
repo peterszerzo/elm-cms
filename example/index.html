@@ -26,19 +26,36 @@
         apiUrl: 'http://localhost:3001/'
       })
 
+      // Perform custom validation on a field
       app.ports.validateField.subscribe(function (data) {
         var obj = JSON.parse(data)
-        var name = obj.name
-        var value = obj.value
-        var valid
-        try {
-          valid = JSON.stringify(jsyaml.load(value))
-        } catch(err) {
-          valid = null
+        var validationMessage
+        var isValid
+        var converted
+        if (obj.validationName === 'yaml') {
+          try {
+            converted = jsyaml.load(obj.value)
+            if (!converted.subtasks || !Array.isArray(converted.subtasks)) {
+              throw new Error('Subtasks must be a list.')
+            }
+            validationMessage = JSON.stringify(converted, null, 2)
+            isValid = true
+          } catch(err) {
+            validationMessage = err.toString()
+            isValid = false
+          }
+        } else {
+          isValid = true
+          validationMessage = obj.value
         }
+        // Send data back to Elm
         app.ports.fieldValidated.send(JSON.stringify({
-          name: name,
-          valid: valid
+          fieldId: obj.fieldId,
+          recordId: obj.recordId,
+          validation: {
+            isValid: isValid,
+            message: validationMessage || obj.value
+          }
         }))
       })
 

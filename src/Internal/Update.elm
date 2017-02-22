@@ -12,6 +12,7 @@ import Internal.Commands as Commands
 import Internal.Routes exposing (..)
 import Internal.Ports as Ports
 import Cms.Field as Field
+import Internal.CustomValidation as CustomValidation
 
 
 decodeRecord : JD.Decoder (Dict.Dict String String)
@@ -38,7 +39,16 @@ updateShow records apiUrl showMsg showModel =
                             (\val ->
                                 case val.type_ of
                                     Field.Custom validationName ->
-                                        Ports.validateField ("{\"name\":" ++ (JE.encode 0 (JE.string validationName)) ++ ",\"value\":" ++ (JE.encode 0 (JE.string value)) ++ "}") |> Just
+                                        Ports.validateField
+                                            ({ validationName = validationName
+                                             , value = value
+                                             , fieldId = fieldId
+                                             , recordId = showModel.recordId
+                                             }
+                                                |> CustomValidation.requestEncoder
+                                                |> JE.encode 0
+                                            )
+                                            |> Just
 
                                     _ ->
                                         Nothing
@@ -79,13 +89,22 @@ updateShow records apiUrl showMsg showModel =
                 _ ->
                     ( showModel, Cmd.none )
 
-        FieldValidated val ->
+        FieldValidated validationString ->
             let
-                _ =
-                    val
-                        |> Debug.log "val"
+                validationResult =
+                    validationString
+                        |> JD.decodeString CustomValidation.responseDecoder
+
+                customValidations =
+                    case validationResult of
+                        Ok validation ->
+                            showModel.customValidations
+                                |> Dict.insert validation.fieldId validation
+
+                        Err decodeError ->
+                            showModel.customValidations
             in
-                ( showModel, Cmd.none )
+                ( { showModel | customValidations = customValidations }, Cmd.none )
 
         _ ->
             ( showModel, Cmd.none )
@@ -138,8 +157,8 @@ update records msg model =
                                 _ ->
                                     ( model, Cmd.none )
 
-                        Show { recordName, recordId, focusedField, status } ->
-                            case status of
+                        Show showModel ->
+                            case showModel.status of
                                 LoadingShow ->
                                     let
                                         status =
@@ -157,11 +176,7 @@ update records msg model =
                                         ( { model
                                             | route =
                                                 Show
-                                                    { recordName = recordName
-                                                    , recordId = recordId
-                                                    , focusedField = focusedField
-                                                    , status = status
-                                                    }
+                                                    { showModel | status = status }
                                           }
                                         , Cmd.none
                                         )
@@ -172,11 +187,11 @@ update records msg model =
                                             Saved dict
 
                                         flash =
-                                            { message = recordName ++ " successfully saved, id = " ++ recordId
+                                            { message = showModel.recordName ++ " successfully saved, id = " ++ showModel.recordId
                                             , createdAt = model.time
                                             }
                                     in
-                                        ( { model | route = Show { recordName = recordName, recordId = recordId, focusedField = focusedField, status = status }, flash = flash }, Cmd.none )
+                                        ( { model | route = Show { showModel | status = status }, flash = flash }, Cmd.none )
 
                                 _ ->
                                     ( model, Cmd.none )
@@ -187,16 +202,14 @@ update records msg model =
         ReceiveHttp (Err err) ->
             case model.route of
                 -- When the app navigates to the edit link of a not-yet-created record, we expect a 404
-                Show { recordName, recordId, focusedField, status } ->
-                    case status of
+                Show showModel ->
+                    case showModel.status of
                         LoadingShow ->
                             ( { model
                                 | route =
                                     Show
-                                        { recordName = recordName
-                                        , recordId = recordId
-                                        , focusedField = focusedField
-                                        , status = createRecord records recordName recordId |> New
+                                        { showModel
+                                            | status = createRecord records showModel.recordName showModel.recordId |> New
                                         }
                               }
                             , Cmd.none

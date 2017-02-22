@@ -57,24 +57,43 @@ loader =
     p [] [ text "Loading, please wait..." ]
 
 
-editFormField : Field.Field -> String -> Bool -> String -> Html Msg
-editFormField field recordName isFocused val =
+editFormField : ShowModel -> Field.Field -> String -> Html Msg
+editFormField showModel field val =
     let
-        ( isValid, errorMessage ) =
+        isFocused =
+            showModel.focusedField == Just field.id
+
+        validationResult =
             field.validation
                 |> Maybe.map
                     (\validation ->
                         case validation.type_ of
                             Field.FieldRegex regex ->
-                                ( Regex.contains regex val, validation.errorMessage )
+                                if Regex.contains regex val then
+                                    Ok ""
+                                else
+                                    Err validation.errorMessage
+
+                            Field.Custom name ->
+                                Dict.get field.id showModel.customValidations
+                                    |> Maybe.map .validation
+                                    |> Maybe.withDefault (Ok val)
 
                             _ ->
-                                ( True, "" )
+                                Ok val
                     )
-                |> Maybe.withDefault ( True, "" )
+                |> Maybe.withDefault (Ok val)
+
+        isValid =
+            case validationResult of
+                Ok _ ->
+                    True
+
+                Err _ ->
+                    False
 
         idName =
-            (recordName ++ "-" ++ field.id)
+            (showModel.recordName ++ "-" ++ field.id)
     in
         label [ for idName ]
             ([ text ("Enter " ++ field.id)
@@ -140,7 +159,16 @@ editFormField field recordName isFocused val =
                                     )
                                 ]
                                 []
-                            , div [ style Styles.markdownRendered ] [ text val ]
+                            , div [ style Styles.markdownRendered ]
+                                [ text
+                                    (case validationResult of
+                                        Ok val_ ->
+                                            val_
+
+                                        Err errMsg ->
+                                            errMsg
+                                    )
+                                ]
                             , div
                                 [ style Styles.close
                                 , onClick (SetFocusedField Nothing)
@@ -239,18 +267,27 @@ editFormField field recordName isFocused val =
                 ++ (if isValid then
                         []
                     else
-                        [ p [ style Styles.validationError ] [ text errorMessage ]
+                        [ p [ style Styles.validationError ]
+                            [ text
+                                (case validationResult of
+                                    Ok _ ->
+                                        ""
+
+                                    Err errMessage ->
+                                        errMessage
+                                )
+                            ]
                         ]
                    )
             )
             |> Html.map ShowMsgContainer
 
 
-editForm : Models.Records -> String -> Maybe String -> Dict.Dict String String -> Html Msg
-editForm records recordName focusedField dict =
+editForm : Models.Records -> ShowModel -> Dict.Dict String String -> Html Msg
+editForm records showModel dict =
     let
         fields =
-            Dict.get recordName records
+            Dict.get showModel.recordName records
                 |> Maybe.withDefault []
     in
         form []
@@ -260,7 +297,7 @@ editForm records recordName focusedField dict =
                         val =
                             (Dict.get field.id dict |> Maybe.withDefault "")
                     in
-                        editFormField field recordName (focusedField == Just field.id) val
+                        editFormField showModel field val
                 )
                 fields
             )
@@ -321,8 +358,8 @@ content records model =
                     ]
                     dataView
 
-        Show { recordName, recordId, focusedField, status } ->
-            case status of
+        Show showModel ->
+            case showModel.status of
                 LoadingShow ->
                     layout " "
                         []
@@ -332,7 +369,7 @@ content records model =
                     layout
                         "Edit"
                         [ p [] [ text "All saved :)." ] ]
-                        (editForm records recordName focusedField dict)
+                        (editForm records showModel dict)
 
                 UnsavedChanges dict ->
                     layout
@@ -340,7 +377,7 @@ content records model =
                         [ p []
                             [ text "You have unsaved changes."
                             ]
-                        , if (Models.isRecordValid records recordName dict) then
+                        , if (Models.isRecordValid records showModel.recordName dict) then
                             button
                                 [ onClick RequestSave
                                 ]
@@ -349,12 +386,7 @@ content records model =
                           else
                             p [] [ text "Cannot save.. see validation errors below:" ]
                         ]
-                        (editForm
-                            records
-                            recordName
-                            focusedField
-                            dict
-                        )
+                        (editForm records showModel dict)
 
                 New dict ->
                     layout
@@ -368,7 +400,7 @@ content records model =
                             [ text "Save" ]
                             |> Html.map ShowMsgContainer
                         ]
-                        (editForm records recordName focusedField dict)
+                        (editForm records showModel dict)
 
                 Saving dict ->
                     layout "Edit"

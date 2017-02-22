@@ -2,6 +2,7 @@ module Internal.Routes exposing (..)
 
 import Dict
 import Navigation
+import Internal.CustomValidation as CustomValidation
 
 
 type ListStatus
@@ -28,6 +29,7 @@ type alias ShowModel =
     , recordId : String
     , focusedField : Maybe String
     , status : ShowStatus
+    , customValidations : Dict.Dict String CustomValidation.Response
     }
 
 
@@ -51,7 +53,7 @@ parseFrags frags =
     in
         case id of
             Just id_ ->
-                Show { recordName = recordName, recordId = id_, focusedField = Nothing, status = LoadingShow }
+                Show { recordName = recordName, recordId = id_, focusedField = Nothing, status = LoadingShow, customValidations = Dict.empty }
 
             Nothing ->
                 List { recordName = recordName, status = LoadingList }
