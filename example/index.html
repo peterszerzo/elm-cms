@@ -29,6 +29,8 @@
         var validationMessage
         var isValid
         var converted
+        // This is the name specified in the record inside Elm
+        //   { field | validation = Just ( Custom "yaml" ) }
         if (obj.validationName === 'yaml') {
           try {
             converted = jsyaml.load(obj.value)

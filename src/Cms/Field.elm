@@ -10,6 +10,8 @@ import Regex
 
 
 {-| Describes a validation type.
+
+    Custom validations allow you to communicate with JavaScript to perform more complex validations and send back a transformed version of the field for display (e.g. a YAML value converted to JSON). See example in the repo for documentation and stay tuned for more docs.
 -}
 type ValidationType
     = AnyValue
