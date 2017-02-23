@@ -161,9 +161,12 @@ update records msg model =
                             case showModel.status of
                                 LoadingShow ->
                                     let
-                                        status =
+                                        dict =
                                             resString
                                                 |> JD.decodeString decodeRecord
+
+                                        status =
+                                            dict
                                                 |> (\res ->
                                                         case res of
                                                             Ok dict ->

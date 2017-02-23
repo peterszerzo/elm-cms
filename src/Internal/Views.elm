@@ -17,7 +17,7 @@ import Internal.Styles as Styles
 
 link : List (Attribute Msg) -> ( String, String ) -> Html Msg
 link attrs ( label, url ) =
-    a [ style Styles.link, href "javascript:void(0)", onClick (Navigate url) ] [ text label ]
+    a ([ style Styles.link, href "javascript:void(0)", onClick (Navigate url) ] ++ attrs) [ text label ]
 
 
 recordListItem : Models.Records -> String -> Dict.Dict String String -> Html Msg
@@ -47,7 +47,7 @@ recordListItem records recordName rec =
         , div [ style Styles.recordNav ]
             [ link [ style Styles.recordNavLink ]
                 ( "Edit", "/" ++ (Utils.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
-            , a [ style Styles.recordNavLink, href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
+            , a [ style (Styles.link ++ Styles.recordNavLink), href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
             ]
         ]
 
@@ -95,7 +95,7 @@ editFormField showModel field val =
         idName =
             (showModel.recordName ++ "-" ++ field.id)
     in
-        label [ for idName ]
+        label [ for idName, style Styles.inputLabel ]
             ([ text ("Enter " ++ field.id)
              , case field.type_ of
                 Field.Text ->
@@ -110,9 +110,9 @@ editFormField showModel field val =
                                 ++ [ ( "border-color"
                                      , if isValid then
                                         (if isFocused then
-                                            Styles.blue
+                                            Styles.smoke
                                          else
-                                            Styles.faintBlue
+                                            Styles.light
                                         )
                                        else
                                         Styles.red
@@ -143,9 +143,9 @@ editFormField showModel field val =
                                         ++ [ ( "border-color"
                                              , if isValid then
                                                 (if isFocused then
-                                                    Styles.blue
+                                                    Styles.smoke
                                                  else
-                                                    Styles.faintBlue
+                                                    Styles.light
                                                 )
                                                else
                                                 Styles.red
@@ -209,9 +209,9 @@ editFormField showModel field val =
                                         ++ [ ( "border-color"
                                              , if isValid then
                                                 (if isFocused then
-                                                    Styles.blue
+                                                    Styles.smoke
                                                  else
-                                                    Styles.faintBlue
+                                                    Styles.light
                                                 )
                                                else
                                                 Styles.red
@@ -249,10 +249,9 @@ editFormField showModel field val =
                     div []
                         (List.map
                             (\opt ->
-                                div []
+                                div [ style Styles.radio ]
                                     [ input
                                         [ type_ "radio"
-                                        , style Styles.radio
                                         , name field.id
                                         , checked (val == opt)
                                         , onCheck (\isChecked -> ChangeField field.id opt)
@@ -306,7 +305,7 @@ editForm records showModel dict =
 layout : String -> List (Html Msg) -> Html Msg -> Html Msg
 layout title statusChildren content =
     div [ style Styles.content ]
-        [ h1 [] [ text title ]
+        [ h1 [ style Styles.title ] [ text title ]
         , div [ style Styles.status ] statusChildren
         , content
         ]
@@ -319,7 +318,7 @@ content records model =
             layout ("Good day, " ++ model.user)
                 []
                 (div []
-                    [ p [] [ text "Would you like to work on some..." ]
+                    [ p [ style Styles.statusText ] [ text "Would you like to work on some..." ]
                     , ul []
                         (records
                             |> Dict.toList
@@ -351,10 +350,10 @@ content records model =
                                 )
 
                         _ ->
-                            p [] [ text "Something is not implemented." ]
+                            p [ style Styles.statusText ] [ text "Something is not implemented." ]
             in
                 layout ("Listing " ++ recordName ++ "s")
-                    [ a [ href "javascript:void(0)", onClick (RequestNewRecordId recordName) ] [ text "Add new" ]
+                    [ a [ style Styles.link, href "javascript:void(0)", onClick (RequestNewRecordId recordName) ] [ text "Add new" ]
                     ]
                     dataView
 
@@ -368,18 +367,19 @@ content records model =
                 Saved dict ->
                     layout
                         "Edit"
-                        [ p [] [ text "All saved :)." ] ]
+                        [ p [ style Styles.statusText ] [ text "All saved :)." ] ]
                         (editForm records showModel dict)
 
                 UnsavedChanges dict ->
                     layout
                         "Edit"
-                        [ p []
+                        [ p [ style Styles.statusText ]
                             [ text "You have unsaved changes."
                             ]
                         , if (Models.isRecordValid records showModel.recordName dict) then
                             button
-                                [ onClick RequestSave
+                                [ style Styles.link
+                                , onClick RequestSave
                                 ]
                                 [ text "Save" ]
                                 |> Html.map ShowMsgContainer
@@ -391,11 +391,12 @@ content records model =
                 New dict ->
                     layout
                         "New"
-                        [ p []
+                        [ p [ style Styles.statusText ]
                             [ text "This record has not yet been saved."
                             ]
                         , button
-                            [ onClick RequestSave
+                            [ style Styles.link
+                            , onClick RequestSave
                             ]
                             [ text "Save" ]
                             |> Html.map ShowMsgContainer
@@ -435,7 +436,7 @@ fileUpload maybeUrl =
 view : Models.Records -> Models.Model -> Html Msg
 view records model =
     div [ style Styles.container ]
-        [ header [ style Styles.header ] [ link [] ( "elm-cms", "/" ) ]
+        [ header [ style Styles.header ] [ link [ style [ ( "color", "#FFF" ), ( "text-decoration", "none" ), ( "font-weight", "700" ) ] ] ( "elm-cms", "/" ) ]
         , content records model
         , fileUpload model.uploadedFileUrl
         , div

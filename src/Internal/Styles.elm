@@ -3,12 +3,17 @@ module Internal.Styles exposing (..)
 
 black : String
 black =
-    "rgb(0, 0, 0)"
+    "rgb(26, 28, 32)"
 
 
-lightGrey : String
-lightGrey =
-    "rgb(200, 200, 200)"
+smoke : String
+smoke =
+    "rgb(67, 79, 95)"
+
+
+light : String
+light =
+    "rgb(217, 219, 223)"
 
 
 white : String
@@ -18,7 +23,7 @@ white =
 
 blue : String
 blue =
-    "rgb(51, 54, 255)"
+    "rgb(75, 84, 108)"
 
 
 faintBlue : String
@@ -28,12 +33,12 @@ faintBlue =
 
 shadowColor : String
 shadowColor =
-    "rgba(0, 0, 0, 0.2)"
+    "rgba(0, 0, 0, 0.3)"
 
 
 shadowBlur : String
 shadowBlur =
-    "6px"
+    "12px"
 
 
 borderRadius : String
@@ -56,9 +61,18 @@ remark =
 
 link : List ( String, String )
 link =
-    [ ( "color", blue )
-    , ( "margin", "2px" )
+    [ ( "margin", "2px" )
+    , ( "color", "#FFF" )
+    , ( "text-decoration", "none" )
+    , ( "background", blue )
+    , ( "padding", "4px 8px" )
+    , ( "border-radius", "4px" )
     , ( "display", "inline-block" )
+    , ( "outline", "0" )
+    , ( "box-shadow", "none" )
+    , ( "border", "none" )
+    , ( "font-size", "12px" )
+    , ( "letter-spacing", "0.5px" )
     ]
 
 
@@ -78,13 +92,14 @@ content =
 header : List ( String, String )
 header =
     [ ( "width", "100%" )
-    , ( "height", "40px" )
-    , ( "background", faintBlue )
+    , ( "height", "48px" )
+    , ( "background", smoke )
     , ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) )
     , ( "display", "flex" )
     , ( "align-items", "center" )
     , ( "justify-content", "center" )
     , ( "position", "fixed" )
+    , ( "color", "#FFF" )
     , ( "top", "0" )
     , ( "left", "0" )
     ]
@@ -94,7 +109,7 @@ panelSkin : List ( String, String )
 panelSkin =
     [ ( "padding", "20px" )
     , ( "text-align", "left" )
-    , ( "background", faintBlue )
+    , ( "background", light )
     , ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) )
     , ( "border-radius", "var(--border-radius)" )
     ]
@@ -112,8 +127,7 @@ flash =
     , ( "height", "auto" )
     , ( "position", "fixed" )
     , ( "right", "20px" )
-    , ( "top", "60px" )
-    , ( "background", faintBlue )
+    , ( "top", "70px" )
     , ( "padding", "20px" )
     , ( "opacity", "0" )
     , ( "transition", "opacity .3s" )
@@ -132,21 +146,25 @@ flashVisible =
 fileUpload : List ( String, String )
 fileUpload =
     [ ( "padding", "20px" )
-    , ( "background", faintBlue )
     , ( "width", "200px" )
     , ( "position", "fixed" )
+    , ( "border-radius", "4px" )
+    , ( "color", "#FFF" )
+    , ( "text-align", "center" )
+    , ( "background", smoke )
     , ( "left", "20px" )
     , ( "bottom", "20px" )
+    , ( "z-index", "100" )
     ]
-        ++ panelSkin
 
 
 fileUploadLabel : List ( String, String )
 fileUploadLabel =
-    [ ( "cursor", "pointer" )
-    , ( "color", blue )
-    , ( "text-decoration", "underline" )
-    ]
+    link
+        ++ [ ( "cursor", "pointer" )
+           , ( "color", smoke )
+           , ( "background", white )
+           ]
 
 
 validationError : List ( String, String )
@@ -160,7 +178,7 @@ validationError =
 record : List ( String, String )
 record =
     [ ( "text-align", "left" )
-    , ( "background", faintBlue )
+    , ( "background", light )
     , ( "display", "block" )
     , ( "padding", "20px" )
     , ( "margin", "10px 0" )
@@ -193,24 +211,53 @@ visuallyHidden =
     ]
 
 
+inputLabel : List ( String, String )
+inputLabel =
+    [ ( "font-size", "14px" )
+    , ( "color", smoke )
+    , ( "display", "block" )
+    , ( "text-align", "left" )
+    , ( "margin-top", "40px" )
+    ]
+
+
 textInput : List ( String, String )
 textInput =
     [ ( "display", "block" )
-    , ( "margin-top", "6px" )
+    , ( "margin-top", "8px" )
     , ( "width", "100%" )
     , ( "padding", "8px" )
+    , ( "color", black )
     , ( "border-style", "solid" )
     , ( "border-width", "1px" )
     , ( "border-radius", borderRadius )
+    , ( "font-size", "14px" )
+    , ( "outline", "none" )
     , ( "transition", "border-color .3s" )
     ]
 
 
 radio : List ( String, String )
 radio =
-    [ ( "display", "inline-block" )
-    , ( "width", "auto" )
+    [ ( "width", "auto" )
+    , ( "color", black )
+    , ( "margin-top", "4px" )
     , ( "margin-right", "5px" )
+    ]
+
+
+title : List ( String, String )
+title =
+    [ ( "font-size", "48px" )
+    , ( "color", black )
+    , ( "font-weight", "400" )
+    ]
+
+
+statusText : List ( String, String )
+statusText =
+    [ ( "font-size", "14px" )
+    , ( "color", black )
     ]
 
 
@@ -256,10 +303,12 @@ close =
     , ( "top", "20px" )
     , ( "right", "20px" )
     , ( "color", black )
-    , ( "background", blue )
-    , ( "width", "30px" )
-    , ( "height", "30px" )
-    , ( "padding", "7px" )
+    , ( "background", smoke )
+    , ( "width", "40px" )
+    , ( "height", "40px" )
+    , ( "font-size", "20px" )
+    , ( "font-weight", "700" )
+    , ( "padding", "9px" )
     , ( "border-radius", "50%" )
     , ( "color", white )
     , ( "text-align", "center" )
