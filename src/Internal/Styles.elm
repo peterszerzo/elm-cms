@@ -301,7 +301,7 @@ markdownRendered =
 close : List ( String, String )
 close =
     [ ( "position", "absolute" )
-    , ( "top", "20px" )
+    , ( "top", "60px" )
     , ( "right", "20px" )
     , ( "color", black )
     , ( "background", smoke )

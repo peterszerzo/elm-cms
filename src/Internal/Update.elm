@@ -10,7 +10,6 @@ import Internal.Models as Models exposing (Model, Records, createRecord)
 import Internal.Messages exposing (ShowMsg(..), Msg(..))
 import Internal.Commands as Commands
 import Internal.Routes exposing (..)
-import Internal.Ports as Ports
 import Internal.Helpers as Helpers
 import Cms.Field as Field
 import Internal.CustomValidation as CustomValidation
@@ -26,33 +25,39 @@ decodeRecords =
     JD.list decodeRecord
 
 
-updateShow : Records -> String -> ShowMsg -> ShowModel -> ( ShowModel, Cmd Msg )
-updateShow records apiUrl showMsg showModel =
+updateShow : Records -> Models.Config Msg -> String -> ShowMsg -> ShowModel -> ( ShowModel, Cmd Msg )
+updateShow records config apiUrl showMsg showModel =
     case showMsg of
         ChangeField fieldId value ->
             let
                 cmd =
-                    Dict.get showModel.recordName records
-                        |> Maybe.map (List.filter (\field -> field.id == fieldId))
-                        |> Maybe.andThen List.head
-                        |> Maybe.andThen .validation
-                        |> Maybe.andThen
-                            (\val ->
-                                case val.type_ of
-                                    Field.Custom validationName ->
-                                        Ports.validateField
-                                            ({ validationName = validationName
-                                             , value = value
-                                             , fieldId = fieldId
-                                             , recordId = showModel.recordId
-                                             }
-                                                |> CustomValidation.requestEncoder
-                                                |> JE.encode 0
-                                            )
-                                            |> Just
+                    config.customValidations
+                        |> Maybe.map .outgoingPort
+                        |> Maybe.map
+                            (\validateField ->
+                                Dict.get showModel.recordName records
+                                    |> Maybe.map (List.filter (\field -> field.id == fieldId))
+                                    |> Maybe.andThen List.head
+                                    |> Maybe.andThen .validation
+                                    |> Maybe.andThen
+                                        (\val ->
+                                            case val.type_ of
+                                                Field.Custom validationName ->
+                                                    validateField
+                                                        ({ validationName = validationName
+                                                         , value = value
+                                                         , fieldId = fieldId
+                                                         , recordId = showModel.recordId
+                                                         }
+                                                            |> CustomValidation.requestEncoder
+                                                            |> JE.encode 0
+                                                        )
+                                                        |> Just
 
-                                    _ ->
-                                        Nothing
+                                                _ ->
+                                                    Nothing
+                                        )
+                                    |> Maybe.withDefault Cmd.none
                             )
                         |> Maybe.withDefault Cmd.none
 
@@ -111,8 +116,8 @@ updateShow records apiUrl showMsg showModel =
             ( showModel, Cmd.none )
 
 
-update : Records -> Msg -> Model -> ( Model, Cmd Msg )
-update records msg model =
+update : Records -> Models.Config Msg -> Msg -> Model -> ( Model, Cmd Msg )
+update records config msg model =
     case msg of
         ChangeRoute route ->
             ( { model | route = route }, Commands.onRouteChange model.apiUrl route )
@@ -178,12 +183,17 @@ update records msg model =
                                                    )
 
                                         cmd =
-                                            dict
-                                                |> Result.toMaybe
-                                                |> Maybe.map
-                                                    (Helpers.getValidationRequests records showModel.recordName
-                                                        >> (List.map (CustomValidation.requestEncoder >> JE.encode 0 >> Ports.validateField) >> Cmd.batch)
-                                                    )
+                                            Maybe.map2
+                                                (\dict validateField ->
+                                                    dict
+                                                        |> (Helpers.getValidationRequests records showModel.recordName
+                                                                >> (List.map (CustomValidation.requestEncoder >> JE.encode 0 >> validateField) >> Cmd.batch)
+                                                           )
+                                                )
+                                                (dict
+                                                    |> Result.toMaybe
+                                                )
+                                                (config.customValidations |> Maybe.map .outgoingPort)
                                                 |> Maybe.withDefault Cmd.none
                                     in
                                         ( { model
@@ -269,7 +279,7 @@ update records msg model =
                 Show showModel ->
                     let
                         ( newShowModel, cmd ) =
-                            updateShow records model.apiUrl showMsg showModel
+                            updateShow records config model.apiUrl showMsg showModel
                     in
                         ( { model | route = Show newShowModel }, cmd )
 
@@ -310,7 +320,7 @@ update records msg model =
                 )
 
         UploadFile fileInputFieldId ->
-            ( model, Ports.uploadFile fileInputFieldId )
+            ( model, config.fileUploads |> Maybe.map (\fu -> fu.outgoingPort fileInputFieldId) |> Maybe.withDefault Cmd.none )
 
         FileUploaded url ->
             ( { model | uploadedFileUrl = Just url }, Cmd.none )

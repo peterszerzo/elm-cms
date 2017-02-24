@@ -1,4 +1,4 @@
-port module Internal.Ports exposing (..)
+port module Ports exposing (..)
 
 
 port uploadFile : String -> Cmd msg

@@ -52,6 +52,24 @@ type alias Records =
 
 
 
+-- Config
+
+
+type alias Config msg =
+    { fileUploads :
+        Maybe
+            { outgoingPort : String -> Cmd msg
+            , incomingPort : (String -> msg) -> Sub msg
+            }
+    , customValidations :
+        Maybe
+            { outgoingPort : String -> Cmd msg
+            , incomingPort : (String -> msg) -> Sub msg
+            }
+    }
+
+
+
 -- Helpers
 
 

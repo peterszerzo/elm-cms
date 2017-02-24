@@ -367,7 +367,9 @@ content records model =
                 Saved dict ->
                     layout
                         "Edit"
-                        [ p [ style Styles.statusText ] [ text "All saved :)." ] ]
+                        [ p [ style Styles.statusText ] [ text "All saved :)." ]
+                        , a [ style Styles.link, href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
+                        ]
                         (editForm records showModel dict)
 
                 UnsavedChanges dict ->
@@ -376,6 +378,7 @@ content records model =
                         [ p [ style Styles.statusText ]
                             [ text "You have unsaved changes."
                             ]
+                        , a [ style Styles.link, href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
                         , if (Models.isRecordValid records showModel.customValidations showModel.recordName dict) then
                             button
                                 [ style Styles.link

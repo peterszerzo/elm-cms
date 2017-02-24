@@ -3,6 +3,7 @@ module Main exposing (..)
 import Regex
 import Cms exposing (programWithFlags, Model, Flags, Msg)
 import Cms.Field exposing (Field, Type(..), ValidationType(..))
+import Ports exposing (..)
 
 
 todoFields : List Field
@@ -43,3 +44,6 @@ main =
     programWithFlags
         [ ( "todo", todoFields )
         ]
+        { fileUploads = Just { outgoingPort = uploadFile, incomingPort = fileUploaded }
+        , customValidations = Just { outgoingPort = validateField, incomingPort = fieldValidated }
+        }

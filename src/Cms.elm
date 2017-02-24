@@ -26,7 +26,7 @@ It is unlikely it will ever support:
 
 
 # Definitions
-@docs Record, Model, Flags, Msg
+@docs Record, Config, defaultConfig, Model, Flags, Msg
 
 # The program
 @docs programWithFlags
@@ -47,6 +47,19 @@ import Internal.Subscriptions exposing (subscriptions)
 -}
 type alias Record =
     Models.Record
+
+
+{-| General program configuration. This is also a place to pass in the ports you will use to handle image uploads and custom validations. For now, please consult the example to see how this is wired up. More docs to follow shortly!
+-}
+type alias Config msg =
+    Models.Config msg
+
+
+{-| Default program configuration. Use for use cases not involving image uploads or custom validations.
+-}
+defaultConfig : Config msg
+defaultConfig =
+    { fileUploads = Nothing, customValidations = Nothing }
 
 
 {-| The flags the program will need contain the user name and the base url for the REST API. The user name should be human-readable (it shows up as a greeting), and the REST API url should not contain a trailing slash.
@@ -74,8 +87,8 @@ type alias Msg =
 
 {-| Create that dashboard. No need to pass models, inputs and views this time, just a list of records.
 -}
-programWithFlags : List ( String, Record ) -> Program Models.Flags Models.Model Messages.Msg
-programWithFlags recs =
+programWithFlags : List ( String, Record ) -> Config Messages.Msg -> Program Models.Flags Models.Model Messages.Msg
+programWithFlags recs config =
     let
         records =
             Dict.fromList recs
@@ -84,6 +97,6 @@ programWithFlags recs =
             (Messages.ChangeRoute << parse)
             { view = view records
             , init = init
-            , update = update records
-            , subscriptions = subscriptions
+            , update = update records config
+            , subscriptions = subscriptions config
             }
