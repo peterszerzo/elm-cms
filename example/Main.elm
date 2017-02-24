@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Regex
 import Cms exposing (programWithFlags, Model, Flags, Msg)
 import Cms.Field exposing (Field, Type(..), ValidationType(..))
 
@@ -10,7 +11,11 @@ todoFields =
       , type_ = Text
       , showInListView = True
       , default = Nothing
-      , validation = Nothing
+      , validation =
+            Just
+                { type_ = FieldRegex (Regex.regex "^1234$")
+                , errorMessage = "Must be this or that"
+                }
       }
     , { id = "completed"
       , type_ = Radio [ "yes", "no", "maybe" ]

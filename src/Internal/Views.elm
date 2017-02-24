@@ -376,7 +376,7 @@ content records model =
                         [ p [ style Styles.statusText ]
                             [ text "You have unsaved changes."
                             ]
-                        , if (Models.isRecordValid records showModel.recordName dict) then
+                        , if (Models.isRecordValid records showModel.customValidations showModel.recordName dict) then
                             button
                                 [ style Styles.link
                                 , onClick RequestSave

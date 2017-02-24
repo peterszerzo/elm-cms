@@ -11,6 +11,7 @@ import Internal.Messages exposing (ShowMsg(..), Msg(..))
 import Internal.Commands as Commands
 import Internal.Routes exposing (..)
 import Internal.Ports as Ports
+import Internal.Helpers as Helpers
 import Cms.Field as Field
 import Internal.CustomValidation as CustomValidation
 
@@ -176,55 +177,21 @@ update records msg model =
                                                                 ShowError ("Could not decode: " ++ resString)
                                                    )
 
-                                        record =
-                                            Dict.get showModel.recordName records
-
-                                        validationCommands =
-                                            Maybe.map2
-                                                (\dict fields ->
-                                                    fields
-                                                        |> List.filter
-                                                            (\field ->
-                                                                field.validation
-                                                                    |> Maybe.map .type_
-                                                                    |> Maybe.map
-                                                                        (\tp ->
-                                                                            case tp of
-                                                                                Field.Custom _ ->
-                                                                                    True
-
-                                                                                _ ->
-                                                                                    False
-                                                                        )
-                                                                    |> Maybe.withDefault False
-                                                            )
-                                                        |> List.map
-                                                            (\field ->
-                                                                ( field.id
-                                                                , field.validation
-                                                                    |> Maybe.map .type_
-                                                                    |> Maybe.map
-                                                                        (\tp ->
-                                                                            case tp of
-                                                                                Field.Custom validationName ->
-                                                                                    validationName
-
-                                                                                _ ->
-                                                                                    ""
-                                                                        )
-                                                                    |> Maybe.withDefault ""
-                                                                )
-                                                            )
-                                                )
-                                                (dict |> Result.toMaybe)
-                                                record
+                                        cmd =
+                                            dict
+                                                |> Result.toMaybe
+                                                |> Maybe.map
+                                                    (Helpers.getValidationRequests records showModel.recordName
+                                                        >> (List.map (CustomValidation.requestEncoder >> JE.encode 0 >> Ports.validateField) >> Cmd.batch)
+                                                    )
+                                                |> Maybe.withDefault Cmd.none
                                     in
                                         ( { model
                                             | route =
                                                 Show
                                                     { showModel | status = status }
                                           }
-                                        , Cmd.none
+                                        , cmd
                                         )
 
                                 Saving dict ->

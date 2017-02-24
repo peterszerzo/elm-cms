@@ -5,6 +5,7 @@ import Time
 import Dict
 import Internal.Routes exposing (Route, parse)
 import Cms.Field as Field
+import Internal.CustomValidation as CustomValidation
 
 
 type alias Flags =
@@ -77,32 +78,42 @@ createRecord records recordName id =
         |> Maybe.withDefault Dict.empty
 
 
-isRecordValid : Records -> String -> Dict.Dict String String -> Bool
-isRecordValid records recordName dict =
-    Dict.get recordName records
+isRecordFieldValid : Field.Field -> Dict.Dict String CustomValidation.Response -> Dict.Dict String String -> Bool
+isRecordFieldValid field customValidations dict =
+    field.validation
         |> Maybe.map
-            (\fields ->
-                fields
-                    |> List.map
-                        (\field ->
-                            (Maybe.map2
-                                (\val regex -> Regex.contains regex val)
-                                (Dict.get field.id dict)
-                                (case field.validation of
-                                    Just validation ->
-                                        case validation.type_ of
-                                            Field.FieldRegex regex ->
-                                                Just regex
+            (\validation ->
+                case validation.type_ of
+                    Field.FieldRegex regex ->
+                        Dict.get field.id dict
+                            |> Maybe.map (Regex.contains regex)
+                            |> Maybe.withDefault True
 
-                                            _ ->
-                                                Nothing
+                    Field.Custom validationName ->
+                        Dict.get field.id customValidations
+                            |> Maybe.map (.validation >> Result.toMaybe >> (/=) Nothing)
+                            |> Maybe.withDefault True
 
-                                    Nothing ->
-                                        Nothing
-                                )
-                            )
-                                |> Maybe.withDefault True
-                        )
-                    |> List.all identity
+                    _ ->
+                        True
             )
         |> Maybe.withDefault True
+
+
+isRecordValid : Records -> Dict.Dict String CustomValidation.Response -> String -> Dict.Dict String String -> Bool
+isRecordValid records customValidations recordName dict =
+    let
+        record =
+            Dict.get recordName records
+    in
+        record
+            |> Maybe.map
+                (\fields ->
+                    fields
+                        |> List.map
+                            (\field ->
+                                isRecordFieldValid field customValidations dict
+                            )
+                        |> List.all identity
+                )
+            |> Maybe.withDefault True
