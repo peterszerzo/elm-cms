@@ -117,7 +117,7 @@ update records msg model =
             ( { model | route = route }, Commands.onRouteChange model.apiUrl route )
 
         Navigate newUrl ->
-            ( model, Navigation.newUrl newUrl )
+            ( model, Navigation.newUrl ("/elmcms" ++ newUrl) )
 
         ReceiveHttp (Ok resString) ->
             case model.awaiting of

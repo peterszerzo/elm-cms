@@ -3,14 +3,19 @@ module Internal.Commands exposing (..)
 import Http
 import Json.Encode as JE
 import Dict
+import Navigation
 import Internal.Messages exposing (Msg(..))
 import Internal.Routes exposing (Route(..))
 import Internal.Utilities as Utils
+import Internal.Constants exposing (basePathname)
 
 
 onRouteChange : String -> Route -> Cmd Msg
 onRouteChange apiUrl route =
     case route of
+        Redirecting ->
+            Navigation.newUrl basePathname
+
         List { recordName } ->
             Http.send ReceiveHttp <| Http.getString (apiUrl ++ (Utils.pluralize recordName))
 

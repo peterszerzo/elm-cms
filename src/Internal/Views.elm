@@ -411,6 +411,9 @@ content records model =
                 _ ->
                     layout "View not implemented" [] (div [] [])
 
+        Redirecting ->
+            layout "Redirecting..." [] (text "Please wait..")
+
         NotFound error ->
             layout "Not found" [] (text ("Error: " ++ error))
 

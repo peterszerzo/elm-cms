@@ -3,6 +3,7 @@ module Internal.Routes exposing (..)
 import Dict
 import Navigation
 import Internal.CustomValidation as CustomValidation
+import Internal.Constants exposing (basePathname)
 
 
 type ListStatus
@@ -35,6 +36,7 @@ type alias ShowModel =
 
 type Route
     = Home
+    | Redirecting
     | List ListModel
     | Show ShowModel
     | NotFound String
@@ -61,13 +63,17 @@ parseFrags frags =
 
 parse : Navigation.Location -> Route
 parse loc =
-    loc.pathname
-        |> String.dropLeft 1
-        |> (\s ->
-                case s of
-                    "" ->
-                        Home
+    -- urls start with /elmcms
+    if String.left 7 loc.pathname /= basePathname then
+        Redirecting
+    else
+        loc.pathname
+            |> String.dropLeft 8
+            |> (\s ->
+                    case s of
+                        "" ->
+                            Home
 
-                    _ ->
-                        parseFrags (String.split "/" s)
-           )
+                        _ ->
+                            parseFrags (String.split "/" s)
+               )
