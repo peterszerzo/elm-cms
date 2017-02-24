@@ -13,8 +13,8 @@ todoFields =
       , default = Nothing
       , validation =
             Just
-                { type_ = FieldRegex (Regex.regex "^1234$")
-                , errorMessage = "Must be this or that"
+                { type_ = FieldRegex (Regex.regex "^([a-zA-Z]+\\s)*[a-zA-Z]+$")
+                , errorMessage = "Characters and spaces only, please."
                 }
       }
     , { id = "completed"

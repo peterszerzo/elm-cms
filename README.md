@@ -10,9 +10,9 @@ A reliable content management dashboard that does and will subbornly resist over
 * Pass this info to your Elm app as flags.
 * Create that great content.
 
-## Wait what?
+## Come again?
 
-Right, code examples are better. Here's how you run the one in `./example` (it's a todo list alright, but this time, you don't have to make it!):
+Oh, right, code examples are better. Here's how you run the one in the `./example` folder (it's a todo list alright, but this time, you don't have to make it!):
 
 * install some nice things: `npm i -g elm-live json-server`
 * start a simple JSON file-based REST server: `json-server ./example/db.json --port 3001` (watch that file grow nice and chubby as you create records)

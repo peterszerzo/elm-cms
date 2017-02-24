@@ -1,18 +1,3 @@
 {
-  "todos": [
-    {
-      "completed": "no",
-      "content": null,
-      "content2": "subtasks:\n- 1234\n- 543",
-      "id": "fda6f253-1a15-45a9-af8b-996ee1330d71",
-      "task": "1234"
-    },
-    {
-      "completed": "no",
-      "content": null,
-      "content2": "adsfgfdsgf",
-      "id": "22c304a2-7923-4061-a606-b5cc0d4e3fb1",
-      "task": null
-    }
-  ]
+  "todos": []
 }

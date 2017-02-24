@@ -24,6 +24,7 @@
       // Perform custom validation on a field
       app.ports.validateField.subscribe(function (data) {
         var obj = JSON.parse(data)
+        // obj has fields "fieldId", "recordId", "value", "validationName"
         var validationMessage
         var isValid
         var converted
@@ -65,6 +66,7 @@
         if (!file) {
           return
         }
+        // Send back dummy URL after a timeout
         setTimeout(function() {
           app.ports.fileUploaded.send('http://images.com/1234.png')
         }, 1000)
