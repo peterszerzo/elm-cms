@@ -23,7 +23,6 @@ type alias Model =
     { route : Route
     , apiUrl : String
     , user : String
-    , user : String
     , awaiting :
         Maybe
             { operation : Operation
@@ -34,6 +33,7 @@ type alias Model =
         , createdAt : Time.Time
         }
     , networkError : Maybe String
+    , isFileUploadWidgetExpanded : Bool
     , uploadedFileUrl : Maybe String
     , time : Time.Time
     }

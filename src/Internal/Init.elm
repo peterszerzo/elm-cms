@@ -24,6 +24,7 @@ init { user, apiUrl } loc =
                 { message = ""
                 , createdAt = -1000
                 }
+          , isFileUploadWidgetExpanded = False
           , uploadedFileUrl = Nothing
           , time = 0
           }

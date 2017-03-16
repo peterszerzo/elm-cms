@@ -24,6 +24,7 @@ type Msg
     | RequestDelete String String
     | RequestNewRecordId String
     | ReceiveNewRecordId String
+    | ToggleFileUploadWidget
     | UploadFile String
     | FileUploaded String
     | Tick Time.Time

@@ -421,22 +421,26 @@ content records model =
             layout "Not found" [] (text ("Error: " ++ error))
 
 
-fileUpload : Maybe String -> Html Msg
-fileUpload maybeUrl =
-    div [ style Styles.fileUpload ]
-        [ p []
-            [ text
-                (case maybeUrl of
-                    Just url ->
-                        "Uploaded: " ++ url
+fileUpload : Bool -> Maybe String -> Html Msg
+fileUpload isFileUploadWidgetExpanded maybeUrl =
+    if not isFileUploadWidgetExpanded then
+        div [ style Styles.fileUploadToggle, onClick ToggleFileUploadWidget ] [ text "⛰" ]
+    else
+        div [ style Styles.fileUpload ]
+            [ div [ style Styles.fileUploadClose, onClick ToggleFileUploadWidget ] [ text "-" ]
+            , p []
+                [ text
+                    (case maybeUrl of
+                        Just url ->
+                            "Uploaded: " ++ url
 
-                    Nothing ->
-                        "No file uploaded"
-                )
+                        Nothing ->
+                            "No file uploaded"
+                    )
+                ]
+            , input [ style Styles.visuallyHidden, id "fileupload", type_ "file", on "change" (JD.succeed (UploadFile "fileupload")) ] []
+            , label [ style Styles.fileUploadLabel, for "fileupload" ] [ text "Upload file" ]
             ]
-        , input [ style Styles.visuallyHidden, id "fileupload", type_ "file", on "change" (JD.succeed (UploadFile "fileupload")) ] []
-        , label [ style Styles.fileUploadLabel, for "fileupload" ] [ text "Upload file" ]
-        ]
 
 
 view : Models.Records -> Models.Model -> Html Msg
@@ -444,7 +448,7 @@ view records model =
     div [ style Styles.container ]
         [ header [ style Styles.header ] [ link [ style [ ( "color", "#FFF" ), ( "text-decoration", "none" ), ( "font-weight", "700" ) ] ] ( "elm-cms", "/" ) ]
         , content records model
-        , fileUpload model.uploadedFileUrl
+        , fileUpload model.isFileUploadWidgetExpanded model.uploadedFileUrl
         , div
             [ style
                 (Styles.flash

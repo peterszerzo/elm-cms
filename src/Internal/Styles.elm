@@ -144,6 +144,22 @@ flashVisible =
     ]
 
 
+fileUploadToggle : List ( String, String )
+fileUploadToggle =
+    [ ( "cursor", "pointer" )
+    , ( "width", "40px" )
+    , ( "height", "40px" )
+    , ( "border-radius", "50%" )
+    , ( "background", smoke )
+    , ( "right", "20px" )
+    , ( "bottom", "20px" )
+    , ( "z-index", "100" )
+    , ( "position", "fixed" )
+    , ( "font-size", "20px" )
+    , ( "padding", "6px" )
+    ]
+
+
 fileUpload : List ( String, String )
 fileUpload =
     [ ( "padding", "20px" )
@@ -153,9 +169,20 @@ fileUpload =
     , ( "color", "#FFF" )
     , ( "text-align", "center" )
     , ( "background", smoke )
-    , ( "left", "20px" )
+    , ( "right", "20px" )
     , ( "bottom", "20px" )
     , ( "z-index", "100" )
+    ]
+
+
+fileUploadClose : List ( String, String )
+fileUploadClose =
+    [ ( "position", "absolute" )
+    , ( "top", "6px" )
+    , ( "right", "6px" )
+    , ( "padding", "4px" )
+    , ( "cursor", "pointer" )
+    , ( "display", "inline-block" )
     ]
 
 

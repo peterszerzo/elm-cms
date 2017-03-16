@@ -325,5 +325,8 @@ update records config msg model =
         FileUploaded url ->
             ( { model | uploadedFileUrl = Just url }, Cmd.none )
 
+        ToggleFileUploadWidget ->
+            ( { model | isFileUploadWidgetExpanded = not model.isFileUploadWidgetExpanded }, Cmd.none )
+
         Tick time ->
             ( { model | time = model.time + 1 }, Cmd.none )
