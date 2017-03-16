@@ -443,12 +443,15 @@ fileUpload isFileUploadWidgetExpanded maybeUrl =
             ]
 
 
-view : Models.Records -> Models.Model -> Html Msg
-view records model =
+view : Models.Records -> Models.Config Msg -> Models.Model -> Html Msg
+view records config model =
     div [ style Styles.container ]
         [ header [ style Styles.header ] [ link [ style [ ( "color", "#FFF" ), ( "text-decoration", "none" ), ( "font-weight", "700" ) ] ] ( "elm-cms", "/" ) ]
         , content records model
-        , fileUpload model.isFileUploadWidgetExpanded model.uploadedFileUrl
+        , if config.fileUploads == Nothing then
+            div [] []
+          else
+            fileUpload model.isFileUploadWidgetExpanded model.uploadedFileUrl
         , div
             [ style
                 (Styles.flash

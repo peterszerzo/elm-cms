@@ -73,7 +73,7 @@ type alias Flags =
     Models.Flags
 
 
-{-| Opaqua type annotation for the program's model.
+{-| Opaque type annotation for the program's model.
 -}
 type alias Model =
     Models.Model
@@ -95,7 +95,7 @@ programWithFlags recs config =
     in
         Navigation.programWithFlags
             (Messages.ChangeRoute << parse)
-            { view = view records
+            { view = view records config
             , init = init
             , update = update records config
             , subscriptions = subscriptions config

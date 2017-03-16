@@ -44,6 +44,7 @@ main =
     programWithFlags
         [ ( "todo", todoFields )
         ]
-        { fileUploads = Just { outgoingPort = uploadFile, incomingPort = fileUploaded }
+        { fileUploads =
+            Just { outgoingPort = uploadFile, incomingPort = fileUploaded }
         , customValidations = Just { outgoingPort = validateField, incomingPort = fieldValidated }
         }
