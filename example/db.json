@@ -1,11 +1,11 @@
 {
   "todos": [
     {
-      "completed": "no",
+      "completed": "yes",
       "content": "",
-      "content2": "subtasks:\n- task1",
-      "id": "df0571ac-9e21-4978-abe1-f049e42f255e",
-      "task": "asdf"
+      "content2": "",
+      "id": "fa486363-c263-47d9-8785-a596bd84cef6",
+      "task": "adfgfds"
     }
   ]
 }

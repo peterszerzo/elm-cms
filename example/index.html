@@ -16,6 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.8.1/js-yaml.min.js"></script>
     <script src="/elm.js"></script>
     <script>
+      // Start Elm app with a dummy user and json-server's endpoint
       var app = Elm.Main.embed(document.getElementById('root'), {
         user: 'Johnny',
         apiUrl: 'http://localhost:3001/'
@@ -59,7 +60,7 @@
 
       // Handle file uploads
       // Callback is called every time the file input field changes.
-      // When image is uploaded, ship its url back to the fileUploaded port.
+      // When image is uploaded, send its url back to the fileUploaded port.
       app.ports.uploadFile.subscribe(function(id) {
         var node = document.getElementById(id)
         var file = node.files[0]

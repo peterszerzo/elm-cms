@@ -1,9 +1,8 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Regex
 import Cms exposing (programWithFlags, Model, Flags, Msg)
 import Cms.Field exposing (Field, Type(..), ValidationType(..))
-import Ports exposing (..)
 
 
 todoFields : List Field
@@ -37,6 +36,26 @@ todoFields =
       , validation = Just { type_ = Custom "yaml", errorMessage = "" }
       }
     ]
+
+
+
+-- File upload ports
+
+
+port uploadFile : String -> Cmd msg
+
+
+port fileUploaded : (String -> msg) -> Sub msg
+
+
+
+-- Custom validation ports
+
+
+port validateField : String -> Cmd msg
+
+
+port fieldValidated : (String -> msg) -> Sub msg
 
 
 main : Program Flags Model Msg
