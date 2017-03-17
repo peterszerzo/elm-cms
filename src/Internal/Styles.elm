@@ -1,6 +1,21 @@
 module Internal.Styles exposing (..)
 
 
+headerHeight : Int
+headerHeight =
+    64
+
+
+subheaderHeight : Int
+subheaderHeight =
+    48
+
+
+font : String
+font =
+    "monospace"
+
+
 black : String
 black =
     "rgb(26, 28, 32)"
@@ -23,7 +38,7 @@ white =
 
 blue : String
 blue =
-    "rgb(75, 84, 108)"
+    "rgb(48, 83, 166)"
 
 
 faintBlue : String
@@ -33,7 +48,7 @@ faintBlue =
 
 shadowColor : String
 shadowColor =
-    "rgba(0, 0, 0, 0.3)"
+    "rgba(0, 0, 0, 0.4)"
 
 
 shadowBlur : String
@@ -48,7 +63,12 @@ borderRadius =
 
 red : String
 red =
-    "rgb(255, 25, 26)"
+    "rgb(204, 73, 55)"
+
+
+boxShadowMixin : List ( String, String )
+boxShadowMixin =
+    [ ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) ) ]
 
 
 remark : List ( String, String )
@@ -63,13 +83,13 @@ link : List ( String, String )
 link =
     [ ( "margin", "2px" )
     , ( "color", "#FFF" )
+    , ( "cursor", "pointer" )
     , ( "text-decoration", "none" )
     , ( "background", blue )
     , ( "padding", "4px 8px" )
     , ( "border-radius", "4px" )
     , ( "display", "inline-block" )
     , ( "outline", "0" )
-    , ( "box-shadow", "none" )
     , ( "border", "none" )
     , ( "font-size", "12px" )
     , ( "letter-spacing", "0.5px" )
@@ -78,12 +98,20 @@ link =
 
 container : List ( String, String )
 container =
-    [ ( "padding-top", "40px" ) ]
+    [ ( "font-family", font )
+    , ( "text-align", "center" )
+    , ( "position", "fixed" )
+    , ( "top", "0" )
+    , ( "left", "0" )
+    , ( "right", "0" )
+    , ( "bottom", "0" )
+    , ( "overflow", "auto" )
+    ]
 
 
 content : List ( String, String )
 content =
-    [ ( "padding", "40px" )
+    [ ( "padding", "160px 40px" )
     , ( "max-width", "800px" )
     , ( "margin", "auto" )
     ]
@@ -92,17 +120,54 @@ content =
 header : List ( String, String )
 header =
     [ ( "width", "100%" )
-    , ( "height", "48px" )
+    , ( "height", (toString headerHeight) ++ "px" )
     , ( "background", smoke )
-    , ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) )
     , ( "display", "flex" )
     , ( "align-items", "center" )
-    , ( "justify-content", "center" )
+    , ( "justify-content", "left" )
     , ( "position", "fixed" )
     , ( "color", "#FFF" )
     , ( "top", "0" )
     , ( "left", "0" )
+    , ( "padding", "0 30px" )
+    , ( "z-index", "101" )
+    ]
+
+
+headerHomeLink : List ( String, String )
+headerHomeLink =
+    [ ( "color", white )
+    , ( "display", "inline-block" )
+    , ( "text-decoration", "none" )
+    , ( "font-size", "16px" )
+    , ( "letter-spacing", "0.5px" )
+    ]
+
+
+subheader : List ( String, String )
+subheader =
+    [ ( "width", "100%" )
+    , ( "height", (toString subheaderHeight) ++ "px" )
+    , ( "position", "fixed" )
+    , ( "top", (toString headerHeight) ++ "px" )
+    , ( "left", "0" )
     , ( "z-index", "100" )
+    , ( "background", smoke )
+    , ( "border-top", "1px solid #FFF" )
+    , ( "align-items", "center" )
+    , ( "justify-content", "space-between" )
+    , ( "display", "flex" )
+    , ( "padding", "0 30px" )
+    ]
+        ++ boxShadowMixin
+
+
+subheaderTitle : List ( String, String )
+subheaderTitle =
+    [ ( "font-size", "14px" )
+    , ( "color", "white" )
+    , ( "margin", "0" )
+    , ( "font-weight", "400" )
     ]
 
 
@@ -111,14 +176,24 @@ panelSkin =
     [ ( "padding", "20px" )
     , ( "text-align", "left" )
     , ( "background", light )
-    , ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) )
-    , ( "border-radius", "var(--border-radius)" )
+    , ( "border-radius", "6px" )
     ]
+        ++ boxShadowMixin
 
 
 status : List ( String, String )
 status =
-    [ ( "margin-bottom", "50px" )
+    [ ( "width", "640px" )
+    , ( "text-align", "right" )
+    ]
+
+
+statusText : List ( String, String )
+statusText =
+    [ ( "font-size", "14px" )
+    , ( "color", white )
+    , ( "display", "inline-block" )
+    , ( "margin-left", "16px" )
     ]
 
 
@@ -128,7 +203,7 @@ flash =
     , ( "height", "auto" )
     , ( "position", "fixed" )
     , ( "right", "20px" )
-    , ( "top", "70px" )
+    , ( "top", "130px" )
     , ( "padding", "20px" )
     , ( "opacity", "0" )
     , ( "transition", "opacity .3s" )
@@ -157,6 +232,7 @@ fileUploadToggle =
     , ( "position", "fixed" )
     , ( "font-size", "20px" )
     , ( "padding", "6px" )
+    , ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) )
     ]
 
 
@@ -172,6 +248,7 @@ fileUpload =
     , ( "right", "20px" )
     , ( "bottom", "20px" )
     , ( "z-index", "100" )
+    , ( "box-shadow", ("0 0 " ++ shadowBlur ++ " " ++ shadowColor) )
     ]
 
 
@@ -274,18 +351,30 @@ radio =
     ]
 
 
-title : List ( String, String )
-title =
+hero : List ( String, String )
+hero =
+    [ ( "position", "absolute" )
+    , ( "width", "500px" )
+    , ( "top", "calc(50% - 160px)" )
+    , ( "left", "calc(50% - 250px)" )
+    ]
+
+
+heroTitle : List ( String, String )
+heroTitle =
     [ ( "font-size", "48px" )
     , ( "color", black )
     , ( "font-weight", "400" )
     ]
 
 
-statusText : List ( String, String )
-statusText =
-    [ ( "font-size", "14px" )
+heroText : List ( String, String )
+heroText =
+    [ ( "font-size", "18px" )
     , ( "color", black )
+    , ( "font-weight", "400" )
+    , ( "margin", "30px auto 40px" )
+    , ( "line-height", "1.65" )
     ]
 
 
@@ -300,8 +389,8 @@ markdownContainer =
 markdownContainerExpanded : List ( String, String )
 markdownContainerExpanded =
     [ ( "position", "fixed" )
-    , ( "padding", "60px 20px 20px" )
-    , ( "top", "0" )
+    , ( "padding", "20px" )
+    , ( "top", "100px" )
     , ( "left", "0" )
     , ( "right", "0" )
     , ( "bottom", "0" )
@@ -314,7 +403,11 @@ markdownContainerExpanded =
 
 markdownPreview : List ( String, String )
 markdownPreview =
-    textInput ++ [ ( "border-color", faintBlue ), ( "max-height", "50px" ), ( "overflow", "auto" ) ]
+    textInput
+        ++ [ ( "border-color", faintBlue )
+           , ( "max-height", "50px" )
+           , ( "overflow", "auto" )
+           ]
 
 
 markdownRendered : List ( String, String )
@@ -328,7 +421,7 @@ markdownRendered =
 close : List ( String, String )
 close =
     [ ( "position", "absolute" )
-    , ( "top", "60px" )
+    , ( "top", "20px" )
     , ( "right", "20px" )
     , ( "color", black )
     , ( "background", smoke )

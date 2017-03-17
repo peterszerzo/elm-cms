@@ -17,7 +17,13 @@ import Internal.Styles as Styles
 
 link : List (Attribute Msg) -> ( String, String ) -> Html Msg
 link attrs ( label, url ) =
-    a ([ style Styles.link, href "javascript:void(0)", onClick (Navigate url) ] ++ attrs) [ text label ]
+    a
+        ([ href "javascript:void(0)"
+         , onClick (Navigate url)
+         ]
+            ++ attrs
+        )
+        [ text label ]
 
 
 recordListItem : Models.Records -> String -> Dict.Dict String String -> Html Msg
@@ -45,9 +51,23 @@ recordListItem records recordName rec =
                     )
             )
         , div [ style Styles.recordNav ]
-            [ link [ style Styles.recordNavLink ]
-                ( "Edit", "/" ++ (Utils.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "") )
-            , a [ style (Styles.link ++ Styles.recordNavLink), href "javascript:void(0)", onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault "")) ] [ text "Delete" ]
+            [ link [ style (Styles.link ++ Styles.recordNavLink) ]
+                ( "Edit"
+                , "/" ++ (Utils.pluralize recordName) ++ "/" ++ (Dict.get "id" rec |> Maybe.withDefault "")
+                )
+            , a
+                [ style
+                    (Styles.link
+                        ++ Styles.recordNavLink
+                        ++ [ ( "background"
+                             , Styles.red
+                             )
+                           ]
+                    )
+                , href "javascript:void(0)"
+                , onClick (RequestDelete recordName (Dict.get "id" rec |> Maybe.withDefault ""))
+                ]
+                [ text "Delete" ]
             ]
         ]
 
@@ -305,8 +325,10 @@ editForm records showModel dict =
 layout : String -> List (Html Msg) -> Html Msg -> Html Msg
 layout title statusChildren content =
     div [ style Styles.content ]
-        [ h1 [ style Styles.title ] [ text title ]
-        , div [ style Styles.status ] statusChildren
+        [ div [ style Styles.subheader ]
+            [ h1 [ style Styles.subheaderTitle ] [ text title ]
+            , div [ style Styles.status ] statusChildren
+            ]
         , content
         ]
 
@@ -315,10 +337,11 @@ content : Models.Records -> Models.Model -> Html Msg
 content records model =
     case model.route of
         Home ->
-            layout ("Good day, " ++ model.user)
+            layout ("Home")
                 []
-                (div []
-                    [ p [ style Styles.statusText ] [ text "Would you like to work on some..." ]
+                (div [ style Styles.hero ]
+                    [ h1 [ style Styles.heroTitle ] [ text ("Hello, " ++ model.user) ]
+                    , p [ style Styles.heroText ] [ text "Would you like to work on your precious data today? We have them all here:" ]
                     , ul []
                         (records
                             |> Dict.toList
@@ -326,7 +349,7 @@ content records model =
                             |> List.map
                                 (\recordName ->
                                     li []
-                                        [ link []
+                                        [ link [ style (Styles.link ++ [ ( "font-size", "16px" ), ( "padding", "8px 16px" ) ]) ]
                                             ( (Utils.pluralize recordName)
                                             , "/" ++ (Utils.pluralize recordName)
                                             )
@@ -366,19 +389,18 @@ content records model =
 
                 Saved dict ->
                     layout
-                        "Edit"
+                        ("Editing " ++ showModel.recordName)
                         [ p [ style Styles.statusText ] [ text "All saved :)." ]
-                        , a [ style Styles.link, href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
+                        , a [ style (Styles.link ++ [ ( "margin-left", "8px" ) ]), href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
                         ]
                         (editForm records showModel dict)
 
                 UnsavedChanges dict ->
                     layout
-                        "Edit"
+                        ("Editing " ++ showModel.recordName)
                         [ p [ style Styles.statusText ]
-                            [ text "You have unsaved changes."
+                            [ text "Unsaved.."
                             ]
-                        , a [ style Styles.link, href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
                         , if (Models.isRecordValid records showModel.customValidations showModel.recordName dict) then
                             button
                                 [ style Styles.link
@@ -387,27 +409,34 @@ content records model =
                                 [ text "Save" ]
                                 |> Html.map ShowMsgContainer
                           else
-                            p [] [ text "Cannot save.. see validation errors below:" ]
+                            p [ style Styles.statusText ] [ text "Invalid.." ]
+                        , a [ style (Styles.link ++ [ ( "margin-left", "8px" ) ]), href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
                         ]
                         (editForm records showModel dict)
 
                 New dict ->
                     layout
-                        "New"
+                        ("New " ++ showModel.recordName)
                         [ p [ style Styles.statusText ]
-                            [ text "This record has not yet been saved."
+                            [ text "Unsaved.."
                             ]
-                        , button
-                            [ style Styles.link
-                            , onClick RequestSave
-                            ]
-                            [ text "Save" ]
-                            |> Html.map ShowMsgContainer
+                        , if (Models.isRecordValid records showModel.customValidations showModel.recordName dict) then
+                            button
+                                [ style (Styles.link ++ [ ( "margin-left", "8px" ) ])
+                                , onClick RequestSave
+                                ]
+                                [ text "Save" ]
+                                |> Html.map ShowMsgContainer
+                          else
+                            p [ style Styles.statusText ]
+                                [ text "Validation errors.."
+                                ]
+                        , a [ style (Styles.link ++ [ ( "margin-left", "8px" ) ]), href "javascript:void(0)", onClick (Navigate ("/" ++ (Utils.pluralize showModel.recordName))) ] [ text "Back to list" ]
                         ]
                         (editForm records showModel dict)
 
                 Saving dict ->
-                    layout "Edit"
+                    layout ("Editing " ++ showModel.recordName)
                         []
                         loader
 
@@ -446,7 +475,9 @@ fileUpload isFileUploadWidgetExpanded maybeUrl =
 view : Models.Records -> Models.Config Msg -> Models.Model -> Html Msg
 view records config model =
     div [ style Styles.container ]
-        [ header [ style Styles.header ] [ link [ style [ ( "color", "#FFF" ), ( "text-decoration", "none" ), ( "font-weight", "700" ) ] ] ( "elm-cms", "/" ) ]
+        [ header [ style Styles.header ]
+            [ link [ style Styles.headerHomeLink ] ( "elm-cms", "/" )
+            ]
         , content records model
         , if config.fileUploads == Nothing then
             div [] []

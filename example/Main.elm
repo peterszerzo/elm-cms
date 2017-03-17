@@ -10,7 +10,7 @@ todoFields =
     [ { id = "task"
       , type_ = Text
       , showInListView = True
-      , default = Nothing
+      , default = Just "buy milk"
       , validation =
             Just
                 { type_ = FieldRegex (Regex.regex "^([a-zA-Z]+\\s)*[a-zA-Z]+$")
