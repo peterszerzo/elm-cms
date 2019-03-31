@@ -1,3 +1,5 @@
+DEPRECATED - this library is not maintained. CMS' are pretty hard to abstract in a way that caters to the needs of a realistic UX and infrastructure needs, even simple ones - therefore I am finding it unrealistic that I can pull it off with such a simple system. Fun attempt though :).
+
 # elm-cms
 
 A small but sturdy content management dashboard that lets you make some records with wildly custom structure and validation. Make it into a Markdown editor, or a Yaml one. Upload some images. Rest your data in Elm's trusted hands.
